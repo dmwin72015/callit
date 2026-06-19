@@ -10,10 +10,12 @@ vendor/
 *.test
 *.out
 go.work
+air.toml
 
 # Env
 .env
 .env.local
+.env.*.local
 
 # IDE
 .vscode/
@@ -24,6 +26,7 @@ go.work
 # Build
 dist/
 build/
+tmp/
 
 # Logs
 *.log
@@ -33,5 +36,13 @@ logs/
 *.db
 *.sqlite
 
-# Temp
-tmp/
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Air (hot reload)
+tmp/server
+

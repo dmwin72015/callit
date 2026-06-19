@@ -1,5 +1,24 @@
 package main
 
+// @title           cnalias API
+// @version         1.0.0
+// @description     中国地区叫法对比平台 API - 记录中国不同地区对同一物品的不同叫法（方言/别名）
+// @termsOfService  http://cnalias.com/terms/
+
+// @contact.name   API Support
+// @contact.email  support@cnalias.com
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 import (
 	"fmt"
 	"log"
@@ -16,6 +35,7 @@ import (
 	"github.com/rdd/cnalias/internal/repository"
 	"github.com/rdd/cnalias/internal/router"
 	"github.com/rdd/cnalias/internal/service"
+	_ "github.com/rdd/cnalias/docs"
 )
 
 func main() {

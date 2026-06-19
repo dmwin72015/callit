@@ -1,5 +1,24 @@
 package handler
 
+// @title           cnalias API
+// @version         1.0.0
+// @description     中国地区叫法对比平台 API
+// @termsOfService  http://cnalias.com/terms/
+
+// @contact.name   API Support
+// @contact.email  support@cnalias.com
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 import (
 	"strconv"
 
@@ -16,6 +35,19 @@ func NewAliasHandler(aliasService service.AliasService) *AliasHandler {
 	return &AliasHandler{aliasService: aliasService}
 }
 
+// SubmitAlias godoc
+// @Summary      Submit a new alias
+// @Description  Submit a new regional alias for an item (requires authentication)
+// @Tags         aliases
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.AliasRequest true "Alias submission"
+// @Success      201 {object} Response{data=model.AliasResponse}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      409 {object} Response
+// @Router       /aliases [post]
 func (h *AliasHandler) Submit(c *gin.Context) {
 	var req model.AliasRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -44,6 +76,17 @@ func (h *AliasHandler) Submit(c *gin.Context) {
 	Created(c, alias)
 }
 
+// AnonymousSubmitAlias godoc
+// @Summary      Submit alias anonymously
+// @Description  Submit a new regional alias without authentication (requires review)
+// @Tags         aliases
+// @Accept       json
+// @Produce      json
+// @Param        request body model.AnonymousAliasRequest true "Anonymous alias submission"
+// @Success      201 {object} Response{data=model.AliasResponse}
+// @Failure      400 {object} Response
+// @Failure      409 {object} Response
+// @Router       /aliases/anonymous [post]
 func (h *AliasHandler) AnonymousSubmit(c *gin.Context) {
 	var req model.AnonymousAliasRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -64,6 +107,16 @@ func (h *AliasHandler) AnonymousSubmit(c *gin.Context) {
 	Created(c, alias)
 }
 
+// GetMySubmissions godoc
+// @Summary      Get user's submissions
+// @Description  Get list of aliases submitted by the current user
+// @Tags         aliases
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {object} Response{data=[]model.AliasResponse}
+// @Failure      401 {object} Response
+// @Router       /aliases/my-submissions [get]
 func (h *AliasHandler) GetMySubmissions(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	_ = userID
@@ -71,6 +124,17 @@ func (h *AliasHandler) GetMySubmissions(c *gin.Context) {
 	InternalError(c, "not implemented")
 }
 
+// SearchByAlias godoc
+// @Summary      Search aliases
+// @Description  Search for items and aliases by keyword
+// @Tags         aliases
+// @Accept       json
+// @Produce      json
+// @Param        q         query   string true  "Search keyword"
+// @Param        region_id query   int64 false "Filter by region ID"
+// @Success      200 {object} []map[string]interface{}
+// @Failure      400 {object} Response
+// @Router       /aliases/search [get]
 func (h *AliasHandler) SearchByAlias(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
