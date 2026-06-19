@@ -37,6 +37,15 @@ func (Item) TableName() string {
 	return "items"
 }
 
+// ItemListOptions 物品列表选项
+type ItemListOptions struct {
+	Page       int
+	PageSize   int
+	CategoryID *int64
+	Search     string
+	OrderBy    string
+}
+
 // ItemRequest 物品请求
 type ItemRequest struct {
 	Name        string `json:"name" validate:"required,min=1,max=100"`

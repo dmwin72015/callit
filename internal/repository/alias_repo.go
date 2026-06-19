@@ -63,9 +63,12 @@ func (r *aliasGORMRepository) FindPending(ctx context.Context, offset, limit int
 
 func (r *aliasGORMRepository) GetPendingCount(ctx context.Context) (int64, error) {
 	var count int64
-	err := r.db.WithContext(ctx).Model(&model.Alias{}).
+	result := r.db.WithContext(ctx).Model(&model.Alias{}).
 		Where("status = ?", model.AliasStatusPending).Count(&count)
-	return count, err
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return count, nil
 }
 
 func (r *aliasGORMRepository) UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error {

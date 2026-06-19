@@ -10,17 +10,8 @@ import (
 type ItemRepository interface {
 	BaseRepository[model.Item]
 	FindByName(ctx context.Context, name string) (*model.Item, error)
-	ListWithFilters(ctx context.Context, opts ItemListOptions) ([]model.Item, int64, error)
+	ListWithFilters(ctx context.Context, opts model.ItemListOptions) ([]model.Item, int64, error)
 	FindWithAliases(ctx context.Context, itemID int64) (*model.ItemResponse, error)
-}
-
-// ItemListOptions 物品列表选项
-type ItemListOptions struct {
-	Page       int
-	PageSize   int
-	CategoryID *int64
-	Search     string
-	OrderBy    string
 }
 
 type itemGORMRepository struct {
@@ -44,7 +35,7 @@ func (r *itemGORMRepository) FindByName(ctx context.Context, name string) (*mode
 	return &item, nil
 }
 
-func (r *itemGORMRepository) ListWithFilters(ctx context.Context, opts ItemListOptions) ([]model.Item, int64, error) {
+func (r *itemGORMRepository) ListWithFilters(ctx context.Context, opts model.ItemListOptions) ([]model.Item, int64, error) {
 	var items []model.Item
 	var total int64
 
