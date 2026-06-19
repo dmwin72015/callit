@@ -1,0 +1,83 @@
+package repository
+
+import (
+	"context"
+	"errors"
+	"github.com/rdd/cnalias/internal/model"
+	"gorm.io/gorm"
+)
+
+// AliasRepository 别名Repository接口
+type AliasRepository interface {
+	BaseRepository[model.Alias]
+	CreateWithCheck(ctx context.Context, alias *model.Alias) (*model.Alias, error)
+	FindPending(ctx context.Context, offset, limit int) ([]model.Alias, error)
+	GetPendingCount(ctx context.Context) (int64, error)
+	UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error
+}
+
+type aliasGORMRepository struct {
+	*BaseGORMRepository[model.Alias]
+	db *gorm.DB
+}
+
+func NewAliasRepository(db *gorm.DB) AliasRepository {
+	return &aliasGORMRepository{
+		BaseGORMRepository: NewBaseGORMRepository[model.Alias](db),
+		db:                 db,
+	}
+}
+
+func (r *aliasGORMRepository) CreateWithCheck(ctx context.Context, alias *model.Alias) (*model.Alias, error) {
+	var existing model.Alias
+	result := r.db.WithContext(ctx).
+		Where("item_id = ? AND region_id = ? AND alias_name = ?",
+			alias.ItemID, alias.RegionID, alias.AliasName).
+		First(&existing)
+
+	if result.Error == nil {
+		return nil, ErrDuplicateAlias
+	}
+
+	if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	if err := r.db.WithContext(ctx).Create(alias).Error; err != nil {
+		return nil, err
+	}
+
+	return alias, nil
+}
+
+func (r *aliasGORMRepository) FindPending(ctx context.Context, offset, limit int) ([]model.Alias, error) {
+	var aliases []model.Alias
+	err := r.db.WithContext(ctx).
+		Where("status = ?", model.AliasStatusPending).
+		Order("created_at ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&aliases).Error
+	return aliases, err
+}
+
+func (r *aliasGORMRepository) GetPendingCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&model.Alias{}).
+		Where("status = ?", model.AliasStatusPending).Count(&count)
+	return count, err
+}
+
+func (r *aliasGORMRepository) UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error {
+	return r.db.WithContext(ctx).Model(&model.Alias{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"status":      status,
+			"reviewer_id": reviewerID,
+			"reviewed_at": gorm.Expr("NOW()"),
+			"review_note": note,
+		}).Error
+}
+
+// ErrDuplicateAlias 重复别名错误
+var ErrDuplicateAlias = errors.New("alias already exists for this item and region")
