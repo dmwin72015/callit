@@ -41,11 +41,11 @@ migrate -path migrations -database "postgres://user:pass@localhost:5432/cnalias?
 go run cmd/server/main.go
 ```
 
-服务将在 http://localhost:8080 启动
+服务将在 http://localhost:8081 启动
 
 ## API文档
 
-启动服务后访问 http://localhost:8080/swagger/index.html
+启动服务后访问 http://localhost:8081/swagger/index.html
 
 ## 项目结构
 

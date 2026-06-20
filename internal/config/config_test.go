@@ -41,6 +41,6 @@ func TestLoadDefaults(t *testing.T) {
 	cfg, err := Load()
 	assert.NoError(t, err)
 
-	assert.Equal(t, "8080", cfg.Server.Port)
+	assert.Equal(t, "8081", cfg.Server.Port)
 	assert.Equal(t, "development", cfg.App.Environment)
 }

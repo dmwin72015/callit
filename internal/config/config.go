@@ -94,7 +94,7 @@ func Load() (*Config, error) {
 
 	jwtSecret := getEnv("JWT_SECRET", "your-secret-key-change-in-production")
 
-	serverPort := getEnv("SERVER_PORT", "8080")
+	serverPort := getEnv("SERVER_PORT", "8081")
 
 	// 解析时间duration
 	accessTokenTTL, err := time.ParseDuration(getEnv("JWT_ACCESS_TOKEN_TTL", "15m"))

@@ -240,11 +240,11 @@ migrate -path migrations -database "postgres://user:pass@localhost:5432/cnalias?
 go run cmd/server/main.go
 \`\`\`
 
-服务将在 http://localhost:8080 启动
+服务将在 http://localhost:8081 启动
 
 ## API文档
 
-启动服务后访问 http://localhost:8080/swagger/index.html
+启动服务后访问 http://localhost:8081/swagger/index.html
 
 ## 项目结构
 
@@ -427,7 +427,7 @@ REDIS_DB=0
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
 # Server
-SERVER_PORT=8080
+SERVER_PORT=8081
 ```
 
 - [ ] **Step 2: 编写单元测试**
@@ -475,7 +475,7 @@ func TestLoadDefaults(t *testing.T) {
 	}
 
 	if cfg.Server.Port != "8080" {
-		t.Errorf("Server.Port = %v, want 8080", cfg.Server.Port)
+		t.Errorf("Server.Port = %v, want 8081", cfg.Server.Port)
 	}
 }
 ```
