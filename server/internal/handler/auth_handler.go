@@ -83,7 +83,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.userService.Login(c.Request.Context(), &req)
+	user, accessToken, refreshToken, err := h.userService.LoginWithUser(c.Request.Context(), &req)
 	if err != nil {
 		Unauthorized(c, "invalid email or password")
 		return
@@ -94,6 +94,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"refresh_token": refreshToken,
 		"token_type":    "Bearer",
 		"expires_in":    900,
+		"user":          user.ToResponse(),
 	})
 }
 

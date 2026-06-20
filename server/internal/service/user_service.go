@@ -13,6 +13,7 @@ import (
 type UserService interface {
 	Register(ctx context.Context, req *model.UserRegisterRequest) (*model.UserResponse, error)
 	Login(ctx context.Context, req *model.UserLoginRequest) (string, string, error)
+	LoginWithUser(ctx context.Context, req *model.UserLoginRequest) (*model.User, string, string, error)
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
 	GetByID(ctx context.Context, id int64) (*model.User, error)
 }
@@ -57,26 +58,31 @@ func (s *userService) Register(ctx context.Context, req *model.UserRegisterReque
 }
 
 func (s *userService) Login(ctx context.Context, req *model.UserLoginRequest) (string, string, error) {
+	_, accessToken, refreshToken, err := s.LoginWithUser(ctx, req)
+	return accessToken, refreshToken, err
+}
+
+func (s *userService) LoginWithUser(ctx context.Context, req *model.UserLoginRequest) (*model.User, string, string, error) {
 	user, err := s.userRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
-		return "", "", errors.New("invalid email or password")
+		return nil, "", "", errors.New("invalid email or password")
 	}
 
 	if err := pkg.ComparePassword(user.PasswordHash, req.Password); err != nil {
-		return "", "", errors.New("invalid email or password")
+		return nil, "", "", errors.New("invalid email or password")
 	}
 
 	accessToken, err := pkg.GenerateAccessToken(user)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate access token: %w", err)
+		return nil, "", "", fmt.Errorf("failed to generate access token: %w", err)
 	}
 
 	refreshToken, err := pkg.GenerateRefreshToken(user)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate refresh token: %w", err)
+		return nil, "", "", fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 
-	return accessToken, refreshToken, nil
+	return user, accessToken, refreshToken, nil
 }
 
 func (s *userService) GetByID(ctx context.Context, id int64) (*model.User, error) {

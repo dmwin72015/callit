@@ -38,6 +38,9 @@ class AuthService {
   setTokens(data: AuthResponse): void {
     localStorage.setItem(this.tokenKey, data.access_token);
     localStorage.setItem(this.refreshKey, data.refresh_token);
+    if (data.user) {
+      localStorage.setItem(this.userKey, JSON.stringify(data.user));
+    }
   }
 
   logout(): void {
