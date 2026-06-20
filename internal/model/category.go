@@ -22,6 +22,19 @@ func (Category) TableName() string {
 	return "categories"
 }
 
+// ToResponse 转换为响应格式
+func (c *Category) ToResponse() *CategoryResponse {
+	resp := &CategoryResponse{
+		ID:        c.ID,
+		Name:      c.Name,
+		ParentID:  c.ParentID,
+		Icon:      c.Icon,
+		SortOrder: c.SortOrder,
+		Children:  []CategoryResponse{},
+	}
+	return resp
+}
+
 // CategoryRequest 分类请求
 type CategoryRequest struct {
 	Name      string `json:"name" validate:"required,min=1,max=50"`

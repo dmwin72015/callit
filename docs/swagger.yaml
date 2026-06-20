@@ -93,6 +93,23 @@ definitions:
     - region_id
     - submitter
     type: object
+  model.CategoryResponse:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/model.CategoryResponse'
+        type: array
+      icon:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      sort_order:
+        type: integer
+    type: object
   model.NameType:
     enum:
     - COMMON
@@ -101,6 +118,37 @@ definitions:
     x-enum-varnames:
     - NameTypeCommon
     - NameTypeAlias
+  model.RegionResponse:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/model.RegionResponse'
+        type: array
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      parent_id:
+        type: integer
+      region_type:
+        $ref: '#/definitions/model.RegionType'
+      sort_order:
+        type: integer
+    type: object
+  model.RegionType:
+    enum:
+    - PROVINCE
+    - CITY
+    - DIALECT
+    - CUSTOM
+    type: string
+    x-enum-varnames:
+    - RegionTypeProvince
+    - RegionTypeCity
+    - RegionTypeDialect
+    - RegionTypeCustom
   model.UserLoginRequest:
     properties:
       email:
@@ -574,6 +622,103 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get list of categories with optional parent filter
+      parameters:
+      - description: Filter by parent category ID
+        format: int64
+        in: query
+        name: parent_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.CategoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List categories
+      tags:
+      - categories
+  /categories/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific category
+      parameters:
+      - description: Category ID
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CategoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get category by ID
+      tags:
+      - categories
+  /categories/tree:
+    get:
+      consumes:
+      - application/json
+      description: Get hierarchical category tree structure
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.CategoryResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get category tree
+      tags:
+      - categories
   /items:
     get:
       consumes:
@@ -654,6 +799,209 @@ paths:
       summary: Get item by ID
       tags:
       - items
+  /regions:
+    get:
+      consumes:
+      - application/json
+      description: Get list of regions with optional filters
+      parameters:
+      - description: Filter by region type
+        enum:
+        - PROVINCE
+        - CITY
+        - DIALECT
+        - CUSTOM
+        in: query
+        name: region_type
+        type: string
+      - description: Filter by parent region ID
+        format: int64
+        in: query
+        name: parent_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.RegionResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List regions
+      tags:
+      - regions
+  /regions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific region
+      parameters:
+      - description: Region ID
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.RegionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get region by ID
+      tags:
+      - regions
+  /regions/tree:
+    get:
+      consumes:
+      - application/json
+      description: Get hierarchical region tree structure
+      parameters:
+      - description: Root region ID (optional)
+        format: int64
+        in: query
+        name: root_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.RegionResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get region tree
+      tags:
+      - regions
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Get list of all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties: true
+                    type: object
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: List tags
+      tags:
+      - tags
+  /tags/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific tag
+      parameters:
+      - description: Tag ID
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Get tag by ID
+      tags:
+      - tags
+  /tags/search:
+    get:
+      consumes:
+      - application/json
+      description: Search tags by keyword
+      parameters:
+      - description: Search keyword
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties: true
+                    type: object
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Search tags
+      tags:
+      - tags
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

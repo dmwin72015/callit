@@ -12,6 +12,8 @@ type AliasRepository interface {
 	BaseRepository[model.Alias]
 	CreateWithCheck(ctx context.Context, alias *model.Alias) (*model.Alias, error)
 	FindPending(ctx context.Context, offset, limit int) ([]model.Alias, error)
+	FindByUserID(ctx context.Context, userID int64) ([]model.Alias, error)
+	Search(ctx context.Context, query string, regionID *int64, limit int) ([]model.Alias, error)
 	GetPendingCount(ctx context.Context) (int64, error)
 	UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error
 }
@@ -69,6 +71,32 @@ func (r *aliasGORMRepository) GetPendingCount(ctx context.Context) (int64, error
 		return 0, result.Error
 	}
 	return count, nil
+}
+
+func (r *aliasGORMRepository) FindByUserID(ctx context.Context, userID int64) ([]model.Alias, error) {
+	var aliases []model.Alias
+	err := r.db.WithContext(ctx).
+		Where("submitted_by = ?", userID).
+		Order("created_at DESC").
+		Find(&aliases).Error
+	return aliases, err
+}
+
+func (r *aliasGORMRepository) Search(ctx context.Context, query string, regionID *int64, limit int) ([]model.Alias, error) {
+	var aliases []model.Alias
+
+	searchQuery := r.db.WithContext(ctx).
+		Where("alias_name ILIKE ?", "%"+query+"%").
+		Where("status = ?", model.AliasStatusApproved).
+		Order("votes_count DESC, created_at DESC").
+		Limit(limit)
+
+	if regionID != nil {
+		searchQuery = searchQuery.Where("region_id = ?", *regionID)
+	}
+
+	err := searchQuery.Find(&aliases).Error
+	return aliases, err
 }
 
 func (r *aliasGORMRepository) UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error {

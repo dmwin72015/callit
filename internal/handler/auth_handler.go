@@ -109,5 +109,30 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Failure      401 {object} Response
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
-	InternalError(c, "not implemented")
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	if req.RefreshToken == "" {
+		BadRequest(c, "refresh_token is required")
+		return
+	}
+
+	accessToken, refreshToken, err := h.userService.RefreshToken(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		Unauthorized(c, "invalid refresh token")
+		return
+	}
+
+	Success(c, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"token_type":    "Bearer",
+		"expires_in":    900,
+	})
 }

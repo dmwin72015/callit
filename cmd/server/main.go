@@ -72,17 +72,26 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	itemRepo := repository.NewItemRepository(db)
 	aliasRepo := repository.NewAliasRepository(db)
+	regionRepo := repository.NewRegionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	tagRepo := repository.NewTagRepository(db)
 
 	// 初始化Service
 	userService := service.NewUserService(userRepo)
 	itemService := service.NewItemService(itemRepo)
 	aliasService := service.NewAliasService(aliasRepo, itemRepo)
+	regionService := service.NewRegionService(regionRepo)
+	categoryService := service.NewCategoryService(categoryRepo)
+	tagService := service.NewTagService(tagRepo)
 
 	// 初始化Handler
 	authHandler := handler.NewAuthHandler(userService)
 	itemHandler := handler.NewItemHandler(itemService)
 	aliasHandler := handler.NewAliasHandler(aliasService)
 	adminHandler := handler.NewAdminHandler(nil, itemService)
+	regionHandler := handler.NewRegionHandler(regionService)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
+	tagHandler := handler.NewTagHandler(tagService)
 
 	// 配置路由
 	router := router.SetupRouter(
@@ -90,6 +99,9 @@ func main() {
 		itemHandler,
 		aliasHandler,
 		adminHandler,
+		regionHandler,
+		categoryHandler,
+		tagHandler,
 	)
 
 	// 启动服务

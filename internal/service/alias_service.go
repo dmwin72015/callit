@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/rdd/cnalias/internal/model"
 	"github.com/rdd/cnalias/internal/repository"
 )
@@ -79,11 +80,33 @@ func (s *aliasService) SubmitAnonymous(ctx context.Context, req *model.Anonymous
 }
 
 func (s *aliasService) GetUserSubmissions(ctx context.Context, userID int64) ([]model.AliasResponse, error) {
-	// TODO: 实现查询用户提交记录
-	return nil, nil
+	aliases, err := s.aliasRepo.FindByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user submissions: %w", err)
+	}
+
+	// 转换为响应格式
+	responses := make([]model.AliasResponse, len(aliases))
+	for i, alias := range aliases {
+		responses[i] = *alias.ToResponse()
+	}
+
+	return responses, nil
 }
 
 func (s *aliasService) Search(ctx context.Context, query string, regionID *int64) ([]model.AliasResponse, error) {
-	// TODO: 实现搜索功能
-	return nil, nil
+	// 搜索已审核通过的别名
+	limit := 50
+	aliases, err := s.aliasRepo.Search(ctx, query, regionID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("search failed: %w", err)
+	}
+
+	// 转换为响应格式
+	responses := make([]model.AliasResponse, len(aliases))
+	for i, alias := range aliases {
+		responses[i] = *alias.ToResponse()
+	}
+
+	return responses, nil
 }

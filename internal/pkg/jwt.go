@@ -77,3 +77,36 @@ func ValidateToken(tokenString string) (*Claims, error) {
 
 	return nil, errors.New("invalid token")
 }
+
+// RefreshToken 刷新token
+func RefreshToken(refreshToken string) (string, string, error) {
+	claims, err := ValidateToken(refreshToken)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid refresh token: %w", err)
+	}
+
+	// 验证是 refresh token (通过 subject 判断)
+	if claims.Subject != fmt.Sprintf("user:%d:refresh", claims.UserID) {
+		return "", "", errors.New("invalid token type")
+	}
+
+	// 创建临时 User 对象生成新 token
+	user := &model.User{
+		ID:    claims.UserID,
+		Email: claims.Email,
+		Role:  claims.Role,
+	}
+
+	// 生成新的 tokens
+	newAccessToken, err := GenerateAccessToken(user)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate access token: %w", err)
+	}
+
+	newRefreshToken, err := GenerateRefreshToken(user)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	return newAccessToken, newRefreshToken, nil
+}

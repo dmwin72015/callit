@@ -28,6 +28,19 @@ func (Region) TableName() string {
 	return "regions"
 }
 
+// ToResponse 转换为响应格式
+func (r *Region) ToResponse() *RegionResponse {
+	resp := &RegionResponse{
+		ID:         r.ID,
+		Name:       r.Name,
+		ParentID:   r.ParentID,
+		RegionType: r.RegionType,
+		Code:       r.Code,
+		SortOrder:  r.SortOrder,
+	}
+	return resp
+}
+
 // RegionRequest 地区请求
 type RegionRequest struct {
 	Name       string    `json:"name" validate:"required,min=1,max=50"`

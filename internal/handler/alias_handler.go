@@ -118,10 +118,25 @@ func (h *AliasHandler) AnonymousSubmit(c *gin.Context) {
 // @Failure      401 {object} Response
 // @Router       /aliases/my-submissions [get]
 func (h *AliasHandler) GetMySubmissions(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-	_ = userID
+	userIDAny, exists := c.Get("user_id")
+	if !exists || userIDAny == nil {
+		Unauthorized(c, "user not authenticated")
+		return
+	}
 
-	InternalError(c, "not implemented")
+	userID, ok := userIDAny.(int64)
+	if !ok {
+		InternalError(c, "invalid user id")
+		return
+	}
+
+	submissions, err := h.aliasService.GetUserSubmissions(c.Request.Context(), userID)
+	if err != nil {
+		InternalError(c, "failed to get submissions")
+		return
+	}
+
+	Success(c, submissions)
 }
 
 // SearchByAlias godoc

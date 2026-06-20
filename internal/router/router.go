@@ -11,6 +11,9 @@ func SetupRouter(
 	itemHandler *handler.ItemHandler,
 	aliasHandler *handler.AliasHandler,
 	adminHandler *handler.AdminHandler,
+	regionHandler *handler.RegionHandler,
+	categoryHandler *handler.CategoryHandler,
+	tagHandler *handler.TagHandler,
 ) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
@@ -39,6 +42,18 @@ func SetupRouter(
 		{
 			authenticated.POST("/aliases", aliasHandler.Submit)
 		}
+
+		v1.GET("/regions", regionHandler.List)
+		v1.GET("/regions/:id", regionHandler.GetByID)
+		v1.GET("/regions/tree", regionHandler.GetTree)
+
+		v1.GET("/categories", categoryHandler.List)
+		v1.GET("/categories/:id", categoryHandler.GetByID)
+		v1.GET("/categories/tree", categoryHandler.GetTree)
+
+		v1.GET("/tags", tagHandler.List)
+		v1.GET("/tags/:id", tagHandler.GetByID)
+		v1.GET("/tags/search", tagHandler.Search)
 
 		admin := v1.Group("/admin")
 		admin.Use(middleware.AuthMiddleware(), middleware.RequireAdmin())

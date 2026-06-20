@@ -16,6 +16,15 @@ func (Tag) TableName() string {
 	return "tags"
 }
 
+// ToResponse 转换为响应格式
+func (t *Tag) ToResponse() *TagResponse {
+	return &TagResponse{
+		ID:    t.ID,
+		Name:  t.Name,
+		Color: t.Color,
+	}
+}
+
 // TagResponse 标签响应
 type TagResponse struct {
 	ID    int64  `json:"id"`

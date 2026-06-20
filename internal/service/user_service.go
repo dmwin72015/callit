@@ -13,6 +13,7 @@ import (
 type UserService interface {
 	Register(ctx context.Context, req *model.UserRegisterRequest) (*model.UserResponse, error)
 	Login(ctx context.Context, req *model.UserLoginRequest) (string, string, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
 	GetByID(ctx context.Context, id int64) (*model.User, error)
 }
 
@@ -80,4 +81,13 @@ func (s *userService) Login(ctx context.Context, req *model.UserLoginRequest) (s
 
 func (s *userService) GetByID(ctx context.Context, id int64) (*model.User, error) {
 	return s.userRepo.GetByID(ctx, id)
+}
+
+func (s *userService) RefreshToken(ctx context.Context, refreshTokenStr string) (string, string, error) {
+	accessToken, newRefreshToken, err := pkg.RefreshToken(refreshTokenStr)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to refresh token: %w", err)
+	}
+
+	return accessToken, newRefreshToken, nil
 }
