@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { Layout } from 'antd';
 import Sidebar from './Sidebar';
 import AdminHeader from './Header';

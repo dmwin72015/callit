@@ -11,9 +11,9 @@ import {
   Form,
   Select,
   Input,
-  message,
   Popconfirm,
   Typography,
+  App,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getUsers, updateUser, deleteUser } from '../../services/users';
@@ -22,6 +22,7 @@ import type { UserResponse } from '../../types';
 const { Title } = Typography;
 
 export default function UserListPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

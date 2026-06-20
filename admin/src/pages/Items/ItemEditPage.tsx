@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Form,
   Input,
   Select,
   Button,
-  message,
   Card,
-  Typography,
   Space,
+  App,
+  Typography,
 } from 'antd';
 import { getItem, createItem, updateItem } from '../../services/items';
 import { getCategories } from '../../services/categories';
@@ -18,11 +18,16 @@ import type { ItemResponse } from '../../types';
 const { Title } = Typography;
 
 export default function ItemEditPage() {
-  const { id } = useParams<{ id: string }>();
+  const { message } = App.useApp();
+  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const isNew = id === 'new';
+
+  if (!isNew && !id) {
+    return null;
+  }
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories', { page: 1, page_size: 100 }],

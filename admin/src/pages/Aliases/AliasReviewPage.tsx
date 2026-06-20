@@ -9,9 +9,9 @@ import {
   Modal,
   Form,
   Input,
-  message,
   Typography,
   Tabs,
+  App,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
@@ -21,6 +21,7 @@ import type { AliasResponse } from '../../types';
 const { Title } = Typography;
 
 export default function AliasReviewPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

@@ -1,7 +1,9 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import AdminLayout from './components/Layout/AdminLayout';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import LoginPage from './pages/Login/LoginPage';
+import NotFoundPage from './pages/NotFound/NotFoundPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import UserListPage from './pages/Users/UserListPage';
 import UserEditPage from './pages/Users/UserEditPage';
@@ -20,9 +22,12 @@ const router = createBrowserRouter(
       path: '/',
       element: (
         <ProtectedRoute requireAdmin>
-          <AdminLayout />
+          <ErrorBoundary>
+            <AdminLayout />
+          </ErrorBoundary>
         </ProtectedRoute>
       ),
+      errorElement: <NotFoundPage />,
       children: [
         { index: true, element: <Navigate to="/dashboard" replace /> },
         { path: 'dashboard', element: <DashboardPage /> },
@@ -37,6 +42,7 @@ const router = createBrowserRouter(
         { path: 'audit-logs', element: <AuditLogPage /> },
       ],
     },
+    { path: '*', element: <NotFoundPage /> },
   ],
   {
     basename: '/admin',

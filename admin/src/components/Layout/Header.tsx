@@ -1,6 +1,6 @@
 import { Layout, Dropdown, Avatar, Space } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthStore } from '../../stores/authStore';
 import type { MenuProps } from 'antd';
 

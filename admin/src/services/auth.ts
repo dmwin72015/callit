@@ -67,10 +67,6 @@ class AuthService {
 
   isAdmin(user?: UserResponse | null): boolean {
     if (user) return user.role === 'ADMIN';
-    try {
-      const storeUser = require('../stores/authStore').useAuthStore.getState().user;
-      if (storeUser) return storeUser.role === 'ADMIN';
-    } catch (e) {}
     const u = this.getUser();
     return u?.role === 'ADMIN';
   }

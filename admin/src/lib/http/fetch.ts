@@ -258,10 +258,8 @@ class FetchService {
       // 使用 fetch 直接调用刷新接口，避免循环
       const response = await fetch(`${this.baseURL}/auth/refresh`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${refreshToken}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
       });
 
       const data: ApiResponse<{ access_token: string; refresh_token?: string }> =

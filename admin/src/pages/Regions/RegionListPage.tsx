@@ -8,9 +8,9 @@ import {
   Modal,
   Form,
   Input,
-  message,
   Popconfirm,
   Typography,
+  App,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -20,6 +20,7 @@ import type { RegionResponse } from '../../types';
 const { Title } = Typography;
 
 export default function RegionListPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
