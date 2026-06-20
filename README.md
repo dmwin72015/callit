@@ -30,18 +30,39 @@ cp .env.example .env
 
 ### 启动开发环境
 
+**开发模式**：数据库和 Redis 使用 Docker，后端和前端在本地运行（支持热重载）
+
 ```bash
-# 启动数据库 (使用Docker)
+# 1. 启动基础设施（数据库 + Redis）
 docker-compose up -d postgres redis
 
-# 执行数据库迁移
-migrate -path migrations -database "postgres://user:pass@localhost:5432/cnalias?sslmode=disable" up
+# 2. 启动后端服务（本地运行）
+./server
+# 或使用 air 热重载
+air
 
-# 启动服务
-go run cmd/server/main.go
+# 3. 启动前端管理后台（新终端窗口）
+cd cnalias-admin
+npm install
+npm run dev
 ```
 
-服务将在 http://localhost:8081 启动
+访问地址：
+- 管理后台：http://localhost:3000
+- 后端 API：http://localhost:8081
+- Swagger 文档：http://localhost:8081/swagger/index.html
+
+**生产模式**：所有服务打包到 Docker 容器中
+
+```bash
+# 仅启动后端服务（不含前端）
+docker-compose up -d
+
+# 或使用生产配置（包含 Nginx）
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+更多开发环境配置详情请参考 [DEVELOPMENT.md](./DEVELOPMENT.md)。
 
 ## API文档
 
