@@ -51,8 +51,6 @@ services:
     profiles:
       - tools
 
-volumes:
-
 networks:
   cnalias-network:
     driver: bridge
