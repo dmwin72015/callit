@@ -58,10 +58,47 @@ func SetupRouter(
 		admin := v1.Group("/admin")
 		admin.Use(middleware.AuthMiddleware(), middleware.RequireAdmin())
 		{
-			admin.GET("/review/queue", adminHandler.GetReviewQueue)
-			admin.POST("/review/:id/approve", adminHandler.ApproveAlias)
-			admin.POST("/review/:id/reject", adminHandler.RejectAlias)
+			admin.GET("/aliases/review-queue", adminHandler.GetReviewQueue)
+			admin.POST("/aliases/:id/approve", adminHandler.ApproveAlias)
+			admin.POST("/aliases/:id/reject", adminHandler.RejectAlias)
 			admin.GET("/stats", adminHandler.GetStats)
+
+			// 物品管理
+			admin.GET("/items", adminHandler.AdminListItems)
+			admin.GET("/items/:id", adminHandler.AdminGetItem)
+			admin.POST("/items", adminHandler.AdminCreateItem)
+			admin.PUT("/items/:id", adminHandler.AdminUpdateItem)
+			admin.DELETE("/items/:id", adminHandler.AdminDeleteItem)
+
+			// 分类管理
+			admin.GET("/categories", adminHandler.AdminListCategories)
+			admin.GET("/categories/:id", adminHandler.AdminGetCategory)
+			admin.POST("/categories", adminHandler.AdminCreateCategory)
+			admin.PUT("/categories/:id", adminHandler.AdminUpdateCategory)
+			admin.DELETE("/categories/:id", adminHandler.AdminDeleteCategory)
+
+			// 地区管理
+			admin.GET("/regions", adminHandler.AdminListRegions)
+			admin.GET("/regions/:id", adminHandler.AdminGetRegion)
+			admin.POST("/regions", adminHandler.AdminCreateRegion)
+			admin.PUT("/regions/:id", adminHandler.AdminUpdateRegion)
+			admin.DELETE("/regions/:id", adminHandler.AdminDeleteRegion)
+
+			// 标签管理
+			admin.GET("/tags", adminHandler.AdminListTags)
+			admin.GET("/tags/:id", adminHandler.AdminGetTag)
+			admin.POST("/tags", adminHandler.AdminCreateTag)
+			admin.PUT("/tags/:id", adminHandler.AdminUpdateTag)
+			admin.DELETE("/tags/:id", adminHandler.AdminDeleteTag)
+
+			// 用户管理
+			admin.GET("/users", adminHandler.AdminListUsers)
+			admin.GET("/users/:id", adminHandler.AdminGetUser)
+			admin.PUT("/users/:id", adminHandler.AdminUpdateUser)
+			admin.DELETE("/users/:id", adminHandler.AdminDeleteUser)
+
+			// 审计日志
+			admin.GET("/audit-logs", adminHandler.AdminListAuditLogs)
 		}
 	}
 

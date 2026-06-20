@@ -1,4 +1,4 @@
-import api from './api';
+import { fetchService } from '../lib/http/fetch';
 import type { PaginatedResponse, AuditLogResponse } from '../types';
 
 export const getAuditLogs = async (params: {
@@ -7,6 +7,6 @@ export const getAuditLogs = async (params: {
   action?: string;
   user_id?: number;
 }): Promise<PaginatedResponse<AuditLogResponse>> => {
-  const response = await api.get<PaginatedResponse<AuditLogResponse>>('/admin/audit-logs', { params });
-  return response.data;
+  const data = await fetchService.get<PaginatedResponse<AuditLogResponse>>('/admin/audit-logs', { params });
+  return data;
 };

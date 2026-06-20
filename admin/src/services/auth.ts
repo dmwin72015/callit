@@ -1,10 +1,10 @@
-import api from './api';
+import { fetchService } from '../lib/http/fetch';
 import type { AuthResponse, UserResponse } from '../types';
 
 class AuthService {
-  private tokenKey = 'cnalias_access_token';
-  private refreshKey = 'cnalias_refresh_token';
-  private userKey = 'cnalias_user';
+  private tokenKey = 'callit_access_token';
+  private refreshKey = 'callit_refresh_token';
+  private userKey = 'callit_user';
 
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
@@ -16,54 +16,42 @@ class AuthService {
 
   getUser(): UserResponse | null {
     const userStr = localStorage.getItem(this.userKey);
-    return userStr ? JSON.parse(userStr) : null;
+    if (!userStr) return null;
+
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      console.error('Failed to parse user from localStorage');
+      return null;
+    }
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/login', {
+    const data = await fetchService.post<AuthResponse>('/auth/login', {
       email,
       password,
     });
-    return response.data;
+    return data;
   }
 
   async refreshAccessToken(refreshToken: string): Promise<string> {
-    const response = await api.post<AuthResponse>('/auth/refresh', {
+    const data = await fetchService.post<AuthResponse>('/auth/refresh', {
       refresh_token: refreshToken,
     });
-    this.setTokens(response.data);
-
-    // Update Zustand store if available
-    try {
-      const { set } = require('../stores/authStore').useAuthStore;
-      if (set) {
-        set({
-          token: response.data.access_token,
-          user: response.data.user || null,
-        });
-      }
-    } catch (e) {
-      // Store may not be available in all contexts
-      console.warn('Could not update authStore:', e);
-    }
-
-    return response.data.access_token;
+    this.setTokens(data);
+    return data.access_token;
   }
 
   setTokens(data: AuthResponse): void {
-    // Clear old data first to prevent stale state
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.refreshKey);
     localStorage.removeItem(this.userKey);
 
-    // Set new data
     localStorage.setItem(this.tokenKey, data.access_token);
     localStorage.setItem(this.refreshKey, data.refresh_token);
     if (data.user) {
       localStorage.setItem(this.userKey, JSON.stringify(data.user));
       console.log('AuthService: Stored user with role:', data.user.role);
-    } else {
-      console.warn('AuthService: No user data in response');
     }
   }
 
@@ -78,7 +66,12 @@ class AuthService {
   }
 
   isAdmin(user?: UserResponse | null): boolean {
-    const u = user || this.getUser();
+    if (user) return user.role === 'ADMIN';
+    try {
+      const storeUser = require('../stores/authStore').useAuthStore.getState().user;
+      if (storeUser) return storeUser.role === 'ADMIN';
+    } catch (e) {}
+    const u = this.getUser();
     return u?.role === 'ADMIN';
   }
 }

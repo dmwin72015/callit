@@ -1,4 +1,3 @@
-import { Navigate, useLocation } from 'react-router-dom';
 import { Result, Button } from 'antd';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -11,11 +10,14 @@ export default function ProtectedRoute({
   children,
   requireAdmin = true,
 }: ProtectedRouteProps) {
-  const location = useLocation();
   const { isAuthenticated, isAdmin } = useAuthStore();
 
   if (!isAuthenticated()) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Use window.location for full page redirect to ensure basename is preserved
+    const loginPath = '/admin/login';
+    const currentPath = window.location.pathname + window.location.search;
+    window.location.href = `${loginPath}?from=${encodeURIComponent(currentPath)}`;
+    return null;
   }
 
   if (requireAdmin && !isAdmin()) {

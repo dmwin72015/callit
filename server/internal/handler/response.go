@@ -67,3 +67,7 @@ func TooManyRequests(c *gin.Context, message string) {
 func InternalError(c *gin.Context, message string) {
 	Error(c, http.StatusInternalServerError, message)
 }
+
+func NotImplemented(c *gin.Context, message string) {
+	Error(c, http.StatusNotImplemented, message)
+}

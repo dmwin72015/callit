@@ -1,4 +1,4 @@
-import api from './api';
+import { fetchService } from '../lib/http/fetch';
 import type { PaginatedResponse, AliasResponse } from '../types';
 
 export const getReviewQueue = async (params: {
@@ -6,16 +6,16 @@ export const getReviewQueue = async (params: {
   page_size?: number;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }): Promise<PaginatedResponse<AliasResponse>> => {
-  const response = await api.get<PaginatedResponse<AliasResponse>>('/admin/aliases/review-queue', { params });
-  return response.data;
+  const data = await fetchService.get<PaginatedResponse<AliasResponse>>('/admin/aliases/review-queue', { params });
+  return data;
 };
 
-export const approveAlias = async (id: number, data?: { note?: string }) => {
-  const response = await api.post(`/admin/aliases/${id}/approve`, data || {});
-  return response.data;
+export const approveAlias = async (id: number, noteData?: { note?: string }) => {
+  const data = await fetchService.post(`/admin/aliases/${id}/approve`, noteData || {});
+  return data;
 };
 
-export const rejectAlias = async (id: number, data: { reason: string }) => {
-  const response = await api.post(`/admin/aliases/${id}/reject`, data);
-  return response.data;
+export const rejectAlias = async (id: number, reasonData: { reason: string }) => {
+  const data = await fetchService.post(`/admin/aliases/${id}/reject`, reasonData);
+  return data;
 };

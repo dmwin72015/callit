@@ -12,6 +12,9 @@ type RegionService interface {
 	List(ctx context.Context, regionType *model.RegionType, parentID *int64) ([]model.RegionResponse, error)
 	GetByID(ctx context.Context, id int64) (*model.RegionResponse, error)
 	GetTree(ctx context.Context, rootID *int64) ([]model.RegionResponse, error)
+	Create(ctx context.Context, req *model.RegionCreateRequest) (*model.RegionResponse, error)
+	Update(ctx context.Context, id int64, req *model.RegionUpdateRequest) (*model.RegionResponse, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type regionService struct {
@@ -92,4 +95,60 @@ func (s *regionService) GetTree(ctx context.Context, rootID *int64) ([]model.Reg
 	}
 
 	return responses, nil
+}
+
+func (s *regionService) Create(ctx context.Context, req *model.RegionCreateRequest) (*model.RegionResponse, error) {
+	region := &model.Region{
+		Name:       req.Name,
+		ParentID:   req.ParentID,
+		RegionType: req.RegionType,
+		Code:       req.Code,
+		SortOrder:  req.SortOrder,
+	}
+
+	err := s.regionRepo.Create(ctx, region)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create region: %w", err)
+	}
+
+	return region.ToResponse(), nil
+}
+
+func (s *regionService) Update(ctx context.Context, id int64, req *model.RegionUpdateRequest) (*model.RegionResponse, error) {
+	region, err := s.regionRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("region not found: %w", err)
+	}
+
+	if req.Name != nil {
+		region.Name = *req.Name
+	}
+	if req.ParentID != nil {
+		region.ParentID = req.ParentID
+	}
+	if req.RegionType != nil {
+		region.RegionType = *req.RegionType
+	}
+	if req.Code != nil {
+		region.Code = *req.Code
+	}
+	if req.SortOrder != nil {
+		region.SortOrder = *req.SortOrder
+	}
+
+	err = s.regionRepo.Update(ctx, region)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update region: %w", err)
+	}
+
+	return region.ToResponse(), nil
+}
+
+func (s *regionService) Delete(ctx context.Context, id int64) error {
+	_, err := s.regionRepo.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("region not found: %w", err)
+	}
+
+	return s.regionRepo.Delete(ctx, id)
 }

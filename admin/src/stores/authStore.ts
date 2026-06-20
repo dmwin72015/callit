@@ -39,11 +39,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       isAdmin: () => {
-        return auth.isAdmin(get().user);
+        // 直接从 Zustand state 获取 user，避免调用 auth.isAdmin 时的 localStorage 时序问题
+        const user = get().user;
+        return user?.role === 'ADMIN';
       },
     }),
     {
-      name: 'cnalias-auth',
+      name: 'callit-auth',
       partialize: (state) => ({
         user: state.user,
         token: state.token,

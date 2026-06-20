@@ -48,7 +48,7 @@ export default function Sidebar() {
         className="h-16 flex items-center justify-center text-white text-xl font-bold"
         style={{ background: 'rgba(255,255,255,0.1)' }}
       >
-        {collapsed ? 'CN' : 'cnalias 管理后台'}
+        {collapsed ? 'CN' : 'callit 管理后台'}
       </div>
       <Menu
         theme="dark"

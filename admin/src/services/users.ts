@@ -1,4 +1,4 @@
-import api from './api';
+import { fetchService } from '../lib/http/fetch';
 import type { PaginatedResponse, UserResponse } from '../types';
 
 export const getUsers = async (params: {
@@ -8,20 +8,20 @@ export const getUsers = async (params: {
   is_verified?: boolean;
   search?: string;
 }): Promise<PaginatedResponse<UserResponse>> => {
-  const response = await api.get<PaginatedResponse<UserResponse>>('/admin/users', { params });
-  return response.data;
+  const data = await fetchService.get<PaginatedResponse<UserResponse>>('/admin/users', { params });
+  return data;
 };
 
 export const getUser = async (id: number): Promise<UserResponse> => {
-  const response = await api.get<UserResponse>(`/admin/users/${id}`);
-  return response.data;
+  const data = await fetchService.get<UserResponse>(`/admin/users/${id}`);
+  return data;
 };
 
-export const updateUser = async (id: number, data: Partial<UserResponse>): Promise<UserResponse> => {
-  const response = await api.put<UserResponse>(`/admin/users/${id}`, data);
-  return response.data;
+export const updateUser = async (id: number, userData: Partial<UserResponse>): Promise<UserResponse> => {
+  const data = await fetchService.put<UserResponse>(`/admin/users/${id}`, userData);
+  return data;
 };
 
 export const deleteUser = async (id: number): Promise<void> => {
-  await api.delete(`/admin/users/${id}`);
+  await fetchService.delete(`/admin/users/${id}`);
 };

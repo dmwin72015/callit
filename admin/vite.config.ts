@@ -5,6 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   base: '/admin/',
+  appType: 'spa',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -13,10 +14,10 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/admin/api': {
+      '/admin/api/v1': {
         target: 'http://localhost:8081',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/admin\/api/, '/api/v1'),
+        rewrite: (path) => path.replace(/^\/admin\/api\/v1/, '/api/v1'),
       },
     },
   },

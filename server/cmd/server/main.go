@@ -20,6 +20,7 @@ package main
 // @description Type "Bearer" followed by a space and JWT token.
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -83,6 +84,13 @@ func main() {
 	categoryRepo := repository.NewCategoryRepository(db)
 	tagRepo := repository.NewTagRepository(db)
 
+	// 初始化默认管理员账号（仅开发环境）
+	if cfg.App.Environment == "development" {
+		if err := initDefaultAdmin(context.Background(), userRepo); err != nil {
+			pkg.Logger.Warn("Failed to initialize default admin", zap.Error(err))
+		}
+	}
+
 	// 初始化Service
 	userService := service.NewUserService(userRepo)
 	itemService := service.NewItemService(itemRepo)
@@ -95,7 +103,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(userService)
 	itemHandler := handler.NewItemHandler(itemService)
 	aliasHandler := handler.NewAliasHandler(aliasService)
-	adminHandler := handler.NewAdminHandler(nil, itemService)
+	adminHandler := handler.NewAdminHandler(nil, itemService, categoryService, regionService, tagService, userService)
 	regionHandler := handler.NewRegionHandler(regionService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	tagHandler := handler.NewTagHandler(tagService)

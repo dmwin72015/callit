@@ -1,4 +1,4 @@
-import api from './api';
+import { fetchService } from '../lib/http/fetch';
 import type { PaginatedResponse, TagResponse } from '../types';
 
 export const getTags = async (params: {
@@ -6,20 +6,20 @@ export const getTags = async (params: {
   page_size?: number;
   search?: string;
 }): Promise<PaginatedResponse<TagResponse>> => {
-  const response = await api.get<PaginatedResponse<TagResponse>>('/admin/tags', { params });
-  return response.data;
+  const data = await fetchService.get<PaginatedResponse<TagResponse>>('/admin/tags', { params });
+  return data;
 };
 
-export const createTag = async (data: { name: string; description?: string; category_ids?: number[] }): Promise<TagResponse> => {
-  const response = await api.post<TagResponse>('/admin/tags', data);
-  return response.data;
+export const createTag = async (tagData: { name: string; description?: string; category_ids?: number[] }): Promise<TagResponse> => {
+  const data = await fetchService.post<TagResponse>('/admin/tags', tagData);
+  return data;
 };
 
-export const updateTag = async (id: number, data: Partial<TagResponse>): Promise<TagResponse> => {
-  const response = await api.put<TagResponse>(`/admin/tags/${id}`, data);
-  return response.data;
+export const updateTag = async (id: number, tagData: Partial<TagResponse>): Promise<TagResponse> => {
+  const data = await fetchService.put<TagResponse>(`/admin/tags/${id}`, tagData);
+  return data;
 };
 
 export const deleteTag = async (id: number): Promise<void> => {
-  await api.delete(`/admin/tags/${id}`);
+  await fetchService.delete(`/admin/tags/${id}`);
 };

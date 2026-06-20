@@ -41,13 +41,31 @@ func (r *Region) ToResponse() *RegionResponse {
 	return resp
 }
 
-// RegionRequest 地区请求
+// RegionRequest 地区请求（保留向后兼容）
 type RegionRequest struct {
 	Name       string    `json:"name" validate:"required,min=1,max=50"`
 	ParentID   *int64    `json:"parent_id"`
 	RegionType RegionType `json:"region_type" validate:"required,oneof=PROVINCE CITY DIALECT CUSTOM"`
 	Code       string    `json:"code"`
 	SortOrder  int       `json:"sort_order"`
+}
+
+// RegionCreateRequest 创建地区请求
+type RegionCreateRequest struct {
+	Name       string    `json:"name" validate:"required,min=1,max=50"`
+	ParentID   *int64    `json:"parent_id"`
+	RegionType RegionType `json:"region_type" validate:"required,oneof=PROVINCE CITY DIALECT CUSTOM"`
+	Code       string    `json:"code"`
+	SortOrder  int       `json:"sort_order"`
+}
+
+// RegionUpdateRequest 更新地区请求
+type RegionUpdateRequest struct {
+	Name       *string    `json:"name" validate:"required,min=1,max=50"`
+	ParentID   *int64     `json:"parent_id"`
+	RegionType *RegionType `json:"region_type" validate:"required,oneof=PROVINCE CITY DIALECT CUSTOM"`
+	Code       *string    `json:"code"`
+	SortOrder  *int       `json:"sort_order"`
 }
 
 // RegionResponse 地区响应

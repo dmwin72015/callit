@@ -35,12 +35,28 @@ func (c *Category) ToResponse() *CategoryResponse {
 	return resp
 }
 
-// CategoryRequest 分类请求
+// CategoryRequest 分类请求（保留向后兼容）
 type CategoryRequest struct {
 	Name      string `json:"name" validate:"required,min=1,max=50"`
 	ParentID  *int64 `json:"parent_id"`
 	Icon      string `json:"icon"`
 	SortOrder int    `json:"sort_order"`
+}
+
+// CategoryCreateRequest 创建分类请求
+type CategoryCreateRequest struct {
+	Name      string `json:"name" validate:"required,min=1,max=50"`
+	ParentID  *int64 `json:"parent_id"`
+	Icon      string `json:"icon"`
+	SortOrder int    `json:"sort_order"`
+}
+
+// CategoryUpdateRequest 更新分类请求
+type CategoryUpdateRequest struct {
+	Name      *string `json:"name" validate:"required,min=1,max=50"`
+	ParentID  *int64  `json:"parent_id"`
+	Icon      *string `json:"icon"`
+	SortOrder *int    `json:"sort_order"`
 }
 
 // CategoryResponse 分类响应

@@ -28,14 +28,29 @@ import (
 )
 
 type AdminHandler struct {
-	reviewService service.ReviewService
-	itemService   service.ItemService
+	reviewService   service.ReviewService
+	itemService     service.ItemService
+	categoryService service.CategoryService
+	regionService   service.RegionService
+	tagService     service.TagService
+	userService    service.UserService
 }
 
-func NewAdminHandler(reviewService service.ReviewService, itemService service.ItemService) *AdminHandler {
+func NewAdminHandler(
+	reviewService service.ReviewService,
+	itemService service.ItemService,
+	categoryService service.CategoryService,
+	regionService service.RegionService,
+	tagService service.TagService,
+	userService service.UserService,
+) *AdminHandler {
 	return &AdminHandler{
-		reviewService: reviewService,
-		itemService:   itemService,
+		reviewService:   reviewService,
+		itemService:     itemService,
+		categoryService: categoryService,
+		regionService:   regionService,
+		tagService:     tagService,
+		userService:    userService,
 	}
 }
 
@@ -54,7 +69,8 @@ func NewAdminHandler(reviewService service.ReviewService, itemService service.It
 // @Failure      403 {object} Response
 // @Router       /admin/review-queue [get]
 func (h *AdminHandler) GetReviewQueue(c *gin.Context) {
-	Success(c, gin.H{"message": "review queue"})
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "review queue"})
 }
 
 // ApproveAlias godoc
@@ -88,7 +104,8 @@ func (h *AdminHandler) ApproveAlias(c *gin.Context) {
 		return
 	}
 
-	Success(c, gin.H{"message": "approved"})
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "approved"})
 }
 
 // RejectAlias godoc
@@ -122,7 +139,8 @@ func (h *AdminHandler) RejectAlias(c *gin.Context) {
 		return
 	}
 
-	Success(c, gin.H{"message": "rejected"})
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "rejected"})
 }
 
 // GetStats godoc
@@ -138,9 +156,825 @@ func (h *AdminHandler) RejectAlias(c *gin.Context) {
 // @Router       /admin/stats [get]
 func (h *AdminHandler) GetStats(c *gin.Context) {
 	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
 		"total_items":     0,
 		"total_aliases":   0,
 		"pending_reviews": 0,
 		"total_users":     0,
+	})
+}
+
+// ========== 物品管理 ==========
+
+// AdminListItems godoc
+// @Summary      Admin list items
+// @Description  Get paginated list of items (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page        query   int    false "Page number"    default(1)
+// @Param        page_size   query   int    false "Page size"       default(20)
+// @Param        category_id query   int64  false "Category ID"
+// @Param        search      query   string false "Search keyword"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/items [get]
+func (h *AdminHandler) AdminListItems(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	categoryIDStr := c.Query("category_id")
+	search := c.Query("search")
+
+	var categoryID *int64
+	if categoryIDStr != "" {
+		id, err := strconv.ParseInt(categoryIDStr, 10, 64)
+		if err != nil {
+			BadRequest(c, "invalid category_id")
+			return
+		}
+		categoryID = &id
+	}
+
+	opts := model.ItemListOptions{
+		Page:       page,
+		PageSize:   pageSize,
+		CategoryID: categoryID,
+		Search:     search,
+		OrderBy:    c.DefaultQuery("order_by", "name"),
+	}
+
+	items, err := h.itemService.List(c.Request.Context(), opts)
+	if err != nil {
+		InternalError(c, "failed to fetch items")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":    items,
+		"page":     page,
+		"page_size": pageSize,
+	})
+}
+
+// AdminGetItem godoc
+// @Summary      Admin get item by ID
+// @Description  Get detailed item information (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Item ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/items/{id} [get]
+func (h *AdminHandler) AdminGetItem(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid item id")
+		return
+	}
+
+	item, err := h.itemService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "item not found")
+		return
+	}
+
+	Success(c, item)
+}
+
+// AdminCreateItem godoc
+// @Summary      Admin create item
+// @Description  Create a new item (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.ItemCreateRequest true "Item data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/items [post]
+func (h *AdminHandler) AdminCreateItem(c *gin.Context) {
+	var req model.ItemCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	item, err := h.itemService.Create(c.Request.Context(), &req)
+	if err != nil {
+		InternalError(c, "failed to create item")
+		return
+	}
+
+	Created(c, item)
+}
+
+// AdminUpdateItem godoc
+// @Summary      Admin update item
+// @Description  Update an existing item (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64                true  "Item ID"
+// @Param        request body model.ItemUpdateRequest true "Item data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/items/{id} [put]
+func (h *AdminHandler) AdminUpdateItem(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid item id")
+		return
+	}
+
+	var req model.ItemUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	item, err := h.itemService.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		InternalError(c, "failed to update item")
+		return
+	}
+
+	Success(c, item)
+}
+
+// AdminDeleteItem godoc
+// @Summary      Admin delete item
+// @Description  Delete an item (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Item ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/items/{id} [delete]
+func (h *AdminHandler) AdminDeleteItem(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid item id")
+		return
+	}
+
+	err = h.itemService.Delete(c.Request.Context(), id)
+	if err != nil {
+		InternalError(c, "failed to delete item")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "deleted"})
+}
+
+// ========== 分类管理 ==========
+
+// AdminListCategories godoc
+// @Summary      Admin list categories
+// @Description  Get paginated list of categories (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page     query   int    false "Page number"    default(1)
+// @Param        page_size query  int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/categories [get]
+func (h *AdminHandler) AdminListCategories(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	parentIDStr := c.Query("parent_id")
+	var parentID *int64
+	if parentIDStr != "" {
+		id, err := strconv.ParseInt(parentIDStr, 10, 64)
+		if err != nil {
+			BadRequest(c, "invalid parent_id")
+			return
+		}
+		parentID = &id
+	}
+
+	categories, err := h.categoryService.List(c.Request.Context(), parentID)
+	if err != nil {
+		InternalError(c, "failed to fetch categories")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":     categories,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+// AdminGetCategory godoc
+// @Summary      Admin get category by ID
+// @Description  Get category details (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Category ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/categories/{id} [get]
+func (h *AdminHandler) AdminGetCategory(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid category id")
+		return
+	}
+
+	category, err := h.categoryService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "category not found")
+		return
+	}
+
+	Success(c, category)
+}
+
+// AdminCreateCategory godoc
+// @Summary      Admin create category
+// @Description  Create a new category (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.CategoryCreateRequest true "Category data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/categories [post]
+func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
+	var req model.CategoryCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	category, err := h.categoryService.Create(c.Request.Context(), &req)
+	if err != nil {
+		InternalError(c, "failed to create category")
+		return
+	}
+
+	Created(c, category)
+}
+
+// AdminUpdateCategory godoc
+// @Summary      Admin update category
+// @Description  Update an existing category (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64                true  "Category ID"
+// @Param        request body model.CategoryUpdateRequest true "Category data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/categories/{id} [put]
+func (h *AdminHandler) AdminUpdateCategory(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid category id")
+		return
+	}
+
+	var req model.CategoryUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	category, err := h.categoryService.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		InternalError(c, "failed to update category")
+		return
+	}
+
+	Success(c, category)
+}
+
+// AdminDeleteCategory godoc
+// @Summary      Admin delete category
+// @Description  Delete a category (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Category ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/categories/{id} [delete]
+func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid category id")
+		return
+	}
+
+	err = h.categoryService.Delete(c.Request.Context(), id)
+	if err != nil {
+		InternalError(c, "failed to delete category")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "deleted"})
+}
+
+// ========== 地区管理 ==========
+
+// AdminListRegions godoc
+// @Summary      Admin list regions
+// @Description  Get paginated list of regions (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page        query   int    false "Page number"    default(1)
+// @Param        page_size   query   int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/regions [get]
+func (h *AdminHandler) AdminListRegions(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	regionTypeStr := c.Query("region_type")
+	var regionType *model.RegionType
+	if regionTypeStr != "" {
+		rt := model.RegionType(regionTypeStr)
+		regionType = &rt
+	}
+
+	parentIDStr := c.Query("parent_id")
+	var parentID *int64
+	if parentIDStr != "" {
+		id, err := strconv.ParseInt(parentIDStr, 10, 64)
+		if err != nil {
+			BadRequest(c, "invalid parent_id")
+			return
+		}
+		parentID = &id
+	}
+
+	regions, err := h.regionService.List(c.Request.Context(), regionType, parentID)
+	if err != nil {
+		InternalError(c, "failed to fetch regions")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":     regions,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+// AdminGetRegion godoc
+// @Summary      Admin get region by ID
+// @Description  Get region details (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Region ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/regions/{id} [get]
+func (h *AdminHandler) AdminGetRegion(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid region id")
+		return
+	}
+
+	region, err := h.regionService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "region not found")
+		return
+	}
+
+	Success(c, region)
+}
+
+// AdminCreateRegion godoc
+// @Summary      Admin create region
+// @Description  Create a new region (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.RegionCreateRequest true "Region data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/regions [post]
+func (h *AdminHandler) AdminCreateRegion(c *gin.Context) {
+	var req model.RegionCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	region, err := h.regionService.Create(c.Request.Context(), &req)
+	if err != nil {
+		InternalError(c, "failed to create region")
+		return
+	}
+
+	Created(c, region)
+}
+
+// AdminUpdateRegion godoc
+// @Summary      Admin update region
+// @Description  Update an existing region (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64                true  "Region ID"
+// @Param        request body model.RegionUpdateRequest true "Region data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/regions/{id} [put]
+func (h *AdminHandler) AdminUpdateRegion(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid region id")
+		return
+	}
+
+	var req model.RegionUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	region, err := h.regionService.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		InternalError(c, "failed to update region")
+		return
+	}
+
+	Success(c, region)
+}
+
+// AdminDeleteRegion godoc
+// @Summary      Admin delete region
+// @Description  Delete a region (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Region ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/regions/{id} [delete]
+func (h *AdminHandler) AdminDeleteRegion(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid region id")
+		return
+	}
+
+	err = h.regionService.Delete(c.Request.Context(), id)
+	if err != nil {
+		InternalError(c, "failed to delete region")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "deleted"})
+}
+
+// ========== 标签管理 ==========
+
+// AdminListTags godoc
+// @Summary      Admin list tags
+// @Description  Get paginated list of tags (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page     query   int    false "Page number"    default(1)
+// @Param        page_size query  int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/tags [get]
+func (h *AdminHandler) AdminListTags(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	tags, err := h.tagService.List(c.Request.Context())
+	if err != nil {
+		InternalError(c, "failed to fetch tags")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":     tags,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+// AdminGetTag godoc
+// @Summary      Admin get tag by ID
+// @Description  Get tag details (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Tag ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/tags/{id} [get]
+func (h *AdminHandler) AdminGetTag(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid tag id")
+		return
+	}
+
+	tag, err := h.tagService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "tag not found")
+		return
+	}
+
+	Success(c, tag)
+}
+
+// AdminCreateTag godoc
+// @Summary      Admin create tag
+// @Description  Create a new tag (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.TagRequest true "Tag data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/tags [post]
+func (h *AdminHandler) AdminCreateTag(c *gin.Context) {
+	var req model.TagRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	tag, err := h.tagService.Create(c.Request.Context(), &req)
+	if err != nil {
+		InternalError(c, "failed to create tag")
+		return
+	}
+
+	Created(c, tag)
+}
+
+// AdminUpdateTag godoc
+// @Summary      Admin update tag
+// @Description  Update an existing tag (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64            true  "Tag ID"
+// @Param        request body model.TagRequest true "Tag data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/tags/{id} [put]
+func (h *AdminHandler) AdminUpdateTag(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid tag id")
+		return
+	}
+
+	var req model.TagRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	tag, err := h.tagService.Update(c.Request.Context(), id, &req)
+	if err != nil {
+		InternalError(c, "failed to update tag")
+		return
+	}
+
+	Success(c, tag)
+}
+
+// AdminDeleteTag godoc
+// @Summary      Admin delete tag
+// @Description  Delete a tag (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Tag ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/tags/{id} [delete]
+func (h *AdminHandler) AdminDeleteTag(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid tag id")
+		return
+	}
+
+	err = h.tagService.Delete(c.Request.Context(), id)
+	if err != nil {
+		InternalError(c, "failed to delete tag")
+		return
+	}
+
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED","message": "deleted"})
+}
+
+// ========== 用户管理 ==========
+
+// AdminListUsers godoc
+// @Summary      Admin list users
+// @Description  Get paginated list of users (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page     query   int    false "Page number"    default(1)
+// @Param        page_size query  int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/users [get]
+func (h *AdminHandler) AdminListUsers(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	// TODO: Implement user listing with filters
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":     []interface{}{},
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+// AdminGetUser godoc
+// @Summary      Admin get user by ID
+// @Description  Get user details (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "User ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/users/{id} [get]
+func (h *AdminHandler) AdminGetUser(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid user id")
+		return
+	}
+
+	user, err := h.userService.GetByID(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "user not found")
+		return
+	}
+
+	Success(c, user.ToResponse())
+}
+
+// AdminUpdateUser godoc
+// @Summary      Admin update user
+// @Description  Update user information (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64                true  "User ID"
+// @Param        request body object{} true "User data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/users/{id} [put]
+func (h *AdminHandler) AdminUpdateUser(c *gin.Context) {
+	NotImplemented(c, "user update not implemented")
+}
+
+// AdminDeleteUser godoc
+// @Summary      Admin delete user
+// @Description  Delete a user (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "User ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/users/{id} [delete]
+func (h *AdminHandler) AdminDeleteUser(c *gin.Context) {
+	NotImplemented(c, "user deletion not implemented")
+}
+
+// ========== 审计日志 ==========
+
+// AdminListAuditLogs godoc
+// @Summary      Admin list audit logs
+// @Description  Get paginated list of audit logs (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page     query   int    false "Page number"    default(1)
+// @Param        page_size query  int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/audit-logs [get]
+func (h *AdminHandler) AdminListAuditLogs(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	// TODO: Implement audit log service
+	Success(c, gin.H{
+		"DEBUG": "MODIFIED",
+		"data":     []interface{}{},
+		"page":      page,
+		"page_size": pageSize,
 	})
 }

@@ -1,0 +1,108 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Editor directories and files
+.vscode/
+.vscode-server/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+.DS_Store
+*.DS_Store
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# Misc
+*.local
+*.tgz
+
+# Vitest
+vitest.config.ts.timestamp-*
+vitest-*.output.*
+
+# Vite
+.vite/
+
+# Temporary files
+*.tmp
+temp/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+*.lnk
+desktop.ini
+
+# IDE specific
+*.swp
+*.swo
+*.swn
+.vim/
+
+# macOS
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# Package manager
+.pnpm-store/
+
+# Debug and diagnostic tools (临时调试文件)
+*-debug-tool.html
+test-*.html
+diagnose-*.cjs
+verify-*.cjs
+quick-check.sh
+
+# Docs - 临时文档和历史文件 (保留核心文档即可)
+docs/401-*.md
+docs/axios-migration-complete.md
+docs/http-client-changelog.md
+docs/refactoring-summary.md
+docs/cancel-quick-start.md
+
+# Superpowers 工作流文档 (本地开发用，不纳入版本控制)
+docs/superpowers/

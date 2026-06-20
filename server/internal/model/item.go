@@ -46,11 +46,25 @@ type ItemListOptions struct {
 	OrderBy    string
 }
 
-// ItemRequest 物品请求
+// ItemRequest 物品请求（保留向后兼容）
 type ItemRequest struct {
 	Name        string `json:"name" validate:"required,min=1,max=100"`
 	CategoryID  *int64 `json:"category_id"`
 	Description string `json:"description"`
+}
+
+// ItemCreateRequest 创建物品请求
+type ItemCreateRequest struct {
+	Name        string `json:"name" validate:"required,min=1,max=100"`
+	CategoryID  *int64 `json:"category_id"`
+	Description string `json:"description"`
+}
+
+// ItemUpdateRequest 更新物品请求
+type ItemUpdateRequest struct {
+	Name        *string `json:"name" validate:"required,min=1,max=100"`
+	CategoryID  *int64  `json:"category_id"`
+	Description *string `json:"description"`
 }
 
 // ItemResponse 物品响应
