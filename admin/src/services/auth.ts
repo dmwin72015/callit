@@ -32,14 +32,38 @@ class AuthService {
       refresh_token: refreshToken,
     });
     this.setTokens(response.data);
+
+    // Update Zustand store if available
+    try {
+      const { set } = require('../stores/authStore').useAuthStore;
+      if (set) {
+        set({
+          token: response.data.access_token,
+          user: response.data.user || null,
+        });
+      }
+    } catch (e) {
+      // Store may not be available in all contexts
+      console.warn('Could not update authStore:', e);
+    }
+
     return response.data.access_token;
   }
 
   setTokens(data: AuthResponse): void {
+    // Clear old data first to prevent stale state
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.refreshKey);
+    localStorage.removeItem(this.userKey);
+
+    // Set new data
     localStorage.setItem(this.tokenKey, data.access_token);
     localStorage.setItem(this.refreshKey, data.refresh_token);
     if (data.user) {
       localStorage.setItem(this.userKey, JSON.stringify(data.user));
+      console.log('AuthService: Stored user with role:', data.user.role);
+    } else {
+      console.warn('AuthService: No user data in response');
     }
   }
 

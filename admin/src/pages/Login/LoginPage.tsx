@@ -17,6 +17,19 @@ export default function LoginPage() {
     try {
       await login(values.email, values.password);
       message.success('登录成功');
+
+      // Debug: Check auth state after login
+      const { isAuthenticated, isAdmin } = useAuthStore.getState();
+      console.log('=== 登录后状态 ===');
+      console.log('isAuthenticated:', isAuthenticated());
+      console.log('isAdmin:', isAdmin());
+      console.log('user:', useAuthStore.getState().user);
+
+      if (!isAdmin()) {
+        message.error('权限不足：不是管理员账号');
+        return;
+      }
+
       navigate(from, { replace: true });
     } catch (error: unknown) {
       message.error(error instanceof Error ? error.message : '登录失败');
