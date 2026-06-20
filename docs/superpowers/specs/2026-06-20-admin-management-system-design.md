@@ -7,11 +7,12 @@
 **Architecture:** Single-page application (SPA) built with Vite + React + TypeScript + Ant Design, consuming backend REST APIs with JWT authentication. Deployed independently, proxied via Nginx to backend API.
 
 **Tech Stack:**
-- **Frontend:** React 18, TypeScript, Vite, Ant Design 5
+- **Frontend:** React 18, TypeScript, Vite, Ant Design 5, Tailwind CSS 3
 - **State:** React Query (TanStack Query) for server state, Zustand for client state
 - **Routing:** React Router v6 with protected routes
 - **HTTP:** Axios with interceptors for auth + error handling
 - **Charts:** ECharts or Ant Design Charts
+- **Styling:** Ant Design components + Tailwind CSS for custom layouts/spacing
 - **Build:** Vite production build, Docker multi-stage
 - **Deploy:** Nginx reverse proxy, TLS termination
 
