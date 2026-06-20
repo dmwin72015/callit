@@ -13,29 +13,34 @@ import RegionListPage from './pages/Regions/RegionListPage';
 import TagListPage from './pages/Tags/TagListPage';
 import AuditLogPage from './pages/AuditLogs/AuditLogPage';
 
-const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+const router = createBrowserRouter(
+  [
+    { path: '/login', element: <LoginPage /> },
+    {
+      path: '/',
+      element: (
+        <ProtectedRoute requireAdmin>
+          <AdminLayout />
+        </ProtectedRoute>
+      ),
+      children: [
+        { index: true, element: <Navigate to="/dashboard" replace /> },
+        { path: 'dashboard', element: <DashboardPage /> },
+        { path: 'users', element: <UserListPage /> },
+        { path: 'users/:id', element: <UserEditPage /> },
+        { path: 'aliases', element: <AliasReviewPage /> },
+        { path: 'items', element: <ItemListPage /> },
+        { path: 'items/:id', element: <ItemEditPage /> },
+        { path: 'categories', element: <CategoryListPage /> },
+        { path: 'regions', element: <RegionListPage /> },
+        { path: 'tags', element: <TagListPage /> },
+        { path: 'audit-logs', element: <AuditLogPage /> },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: (
-      <ProtectedRoute requireAdmin>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'users', element: <UserListPage /> },
-      { path: 'users/:id', element: <UserEditPage /> },
-      { path: 'aliases', element: <AliasReviewPage /> },
-      { path: 'items', element: <ItemListPage /> },
-      { path: 'items/:id', element: <ItemEditPage /> },
-      { path: 'categories', element: <CategoryListPage /> },
-      { path: 'regions', element: <RegionListPage /> },
-      { path: 'tags', element: <TagListPage /> },
-      { path: 'audit-logs', element: <AuditLogPage /> },
-    ],
-  },
-]);
+    basename: '/admin',
+  }
+);
 
 export default router;
