@@ -12,6 +12,13 @@ vendor/
 go.work
 air.toml
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # Env
 .env
 .env.local
@@ -45,4 +52,7 @@ Thumbs.db
 
 # Air (hot reload)
 tmp/server
+
+# other
+.superpowers
 

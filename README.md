@@ -42,55 +42,37 @@ docker-compose up -d postgres redis
 air
 
 # 3. 启动前端管理后台（新终端窗口）
-cd cnalias-admin
+cd admin
 npm install
 npm run dev
 ```
-
-访问地址：
-- 管理后台：http://localhost:3000
-- 后端 API：http://localhost:8081
-- Swagger 文档：http://localhost:8081/swagger/index.html
-
-**生产模式**：所有服务打包到 Docker 容器中
-
-```bash
-# 仅启动后端服务（不含前端）
-docker-compose up -d
-
-# 或使用生产配置（包含 Nginx）
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-更多开发环境配置详情请参考 [DEVELOPMENT.md](./DEVELOPMENT.md)。
-
-## API文档
-
-启动服务后访问 http://localhost:8081/swagger/index.html
 
 ## 项目结构
 
 ```
 cnalias/
-├── cmd/server/           # 应用入口
-├── internal/             # 内部代码
-│   ├── config/          # 配置
-│   ├── model/           # 数据模型
-│   ├── repository/      # 数据访问
-│   ├── service/         # 业务逻辑
-│   ├── handler/         # HTTP处理器
-│   ├── middleware/      # 中间件
-│   └── dto/             # 请求响应DTO
+├── server/               # Go 后端服务
+│   ├── cmd/server/       # 应用入口
+│   └── internal/         # 内部代码
+│       ├── config/       # 配置
+│       ├── model/        # 数据模型
+│       ├── repository/   # 数据访问
+│       ├── service/      # 业务逻辑
+│       ├── handler/      # HTTP处理器
+│       ├── middleware/   # 中间件
+│       └── pkg/          # 工具包
+├── admin/                # 管理后台 (React + Vite + Ant Design)
+│   ├── src/
+│   │   ├── components/   # 组件
+│   │   ├── pages/        # 页面
+│   │   ├── services/     # API服务
+│   │   ├── stores/       # Zustand状态管理
+│   │   └── types/        # TypeScript类型
+│   ├── Dockerfile        # 生产构建配置
+│   └── nginx.conf        # Nginx配置
 ├── migrations/           # 数据库迁移
-└── cnalias-admin/        # 管理后台 (React + Vite + Ant Design)
-    ├── src/
-    │   ├── components/  # 组件
-    │   ├── pages/       # 页面
-    │   ├── services/    # API服务
-    │   ├── stores/      # Zustand状态管理
-    │   └── types/       # TypeScript类型
-    ├── Dockerfile       # 生产构建配置
-    └── nginx.conf       # Nginx配置
+├── docker-compose.yml    # 开发/生产环境配置
+└── docker-compose.prod.yml # 完整生产部署
 ```
 
 ## 管理后台

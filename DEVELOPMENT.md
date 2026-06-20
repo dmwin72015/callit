@@ -71,7 +71,7 @@ air
 
 ```bash
 # 新开一个终端窗口
-cd cnalias-admin
+cd admin
 
 # 安装依赖（首次运行）
 npm install
@@ -128,10 +128,10 @@ cat .env
 curl http://localhost:8081/health
 
 # 2. 检查前端配置
-cat cnalias-admin/.env
+cat admin/.env
 
 # 3. 清除缓存
-cd cnalias-admin && rm -rf node_modules/.vite
+cd admin && rm -rf node_modules/.vite
 ```
 
 ### 数据库连接失败
@@ -181,7 +181,7 @@ docker-compose down
 
 前端单独构建：
 ```bash
-cd cnalias-admin
+cd admin
 npm run build
 # dist/ 目录包含所有静态文件
 ```
@@ -200,7 +200,7 @@ REDIS_PORT=6379
 JWT_SECRET=dev-secret-key
 ```
 
-### 前端配置 (cnalias-admin/.env)
+### 前端配置 (admin/.env)
 
 ```env
 VITE_API_BASE_URL=http://localhost:8081/api/v1
