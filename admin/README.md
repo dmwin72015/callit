@@ -4,15 +4,15 @@
 
 ## 技术栈
 
-- **框架**: React 18 + TypeScript
-- **构建工具**: Vite 5
-- **UI 组件**: Ant Design 5
-- **样式**: Tailwind CSS
-- **状态管理**: Zustand + localStorage 持久化
+- **框架**: React 19 + TypeScript
+- **构建工具**: Vite 7
+- **UI 组件**: Ant Design 6
+- **样式**: Tailwind CSS 4
+- **状态管理**: Zustand 5 + localStorage 持久化
 - **HTTP 客户端**: 原生 Fetch API (封装为 FetchService)
   - 拦截器、请求取消、自动 token 刷新
   - 已完全移除 axios
-- **路由**: React Router v6
+- **路由**: React Router v8
 
 ## 项目结构
 
@@ -30,9 +30,8 @@ admin/src/
 │
 ├── components/         # React 组件
 │   ├── Auth/           # 认证相关组件
-│   │   ├── ProtectedRoute.tsx  # 路由保护组件
-│   │   └── LoginForm.tsx       # 登录表单
-│   ├── Common/         # 通用可复用组件
+│   │   └── ProtectedRoute.tsx  # 路由保护组件
+│   ├── ErrorBoundary/  # 错误边界组件
 │   ├── Layout/         # 布局组件
 │   └── ...
 │
@@ -55,7 +54,8 @@ admin/src/
 │   ├── Tags/           # 标签管理
 │   ├── Aliases/        # 别名管理
 │   ├── Users/          # 用户管理
-│   └── Login/          # 登录页
+│   ├── Login/          # 登录页
+│   └── NotFound/       # 404 页面
 │
 ├── services/           # API 服务层
 │   ├── auth.ts         # 认证服务

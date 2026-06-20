@@ -5,7 +5,7 @@
 ## 技术栈
 
 - **后端**：Go 1.22 + Gin + GORM + PostgreSQL + Redis
-- **前端**：React 18 + TypeScript + Vite + Ant Design + Tailwind CSS
+- **前端**：React 19 + TypeScript + Vite + Ant Design + Tailwind CSS
 
 ## 项目结构
 
