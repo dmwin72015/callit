@@ -68,6 +68,9 @@ func main() {
 	}
 	defer cache.Close()
 
+	// 初始化JWT
+	pkg.InitJWT(&cfg.JWT)
+
 	// 初始化Repository
 	userRepo := repository.NewUserRepository(db)
 	itemRepo := repository.NewItemRepository(db)
