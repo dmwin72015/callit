@@ -103,7 +103,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(userService)
 	itemHandler := handler.NewItemHandler(itemService)
 	aliasHandler := handler.NewAliasHandler(aliasService)
-	adminHandler := handler.NewAdminHandler(nil, itemService, categoryService, regionService, tagService, userService)
+	adminHandler := handler.NewAdminHandler(nil, itemService, categoryService, regionService, tagService, userService, aliasService)
 	regionHandler := handler.NewRegionHandler(regionService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	tagHandler := handler.NewTagHandler(tagService)

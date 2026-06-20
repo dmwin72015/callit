@@ -16,6 +16,8 @@ type AliasRepository interface {
 	Search(ctx context.Context, query string, regionID *int64, limit int) ([]model.Alias, error)
 	GetPendingCount(ctx context.Context) (int64, error)
 	UpdateStatus(ctx context.Context, id int64, status model.AliasStatus, reviewerID int64, note string) error
+	List(ctx context.Context, status *model.AliasStatus, offset, limit int) ([]model.Alias, int64, error)
+	GetDB() *gorm.DB
 }
 
 type aliasGORMRepository struct {
@@ -112,3 +114,23 @@ func (r *aliasGORMRepository) UpdateStatus(ctx context.Context, id int64, status
 
 // ErrDuplicateAlias 重复别名错误
 var ErrDuplicateAlias = errors.New("alias already exists for this item and region")
+
+func (r *aliasGORMRepository) List(ctx context.Context, status *model.AliasStatus, offset, limit int) ([]model.Alias, int64, error) {
+	var aliases []model.Alias
+	var total int64
+
+	query := r.db.WithContext(ctx).Model(&model.Alias{})
+	if status != nil {
+		query = query.Where("status = ?", *status)
+	}
+	query.Count(&total)
+
+	if err := query.Order("created_at DESC").Offset(offset).Limit(limit).Find(&aliases).Error; err != nil {
+		return nil, 0, err
+	}
+	return aliases, total, nil
+}
+
+func (r *aliasGORMRepository) GetDB() *gorm.DB {
+	return r.db
+}

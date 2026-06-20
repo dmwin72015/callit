@@ -8,6 +8,7 @@ import DashboardPage from './pages/Dashboard/DashboardPage';
 import UserListPage from './pages/Users/UserListPage';
 import UserEditPage from './pages/Users/UserEditPage';
 import AliasReviewPage from './pages/Aliases/AliasReviewPage';
+import AliasListPage from './pages/Aliases/AliasListPage';
 import ItemListPage from './pages/Items/ItemListPage';
 import ItemEditPage from './pages/Items/ItemEditPage';
 import CategoryListPage from './pages/Categories/CategoryListPage';
@@ -33,7 +34,8 @@ const router = createBrowserRouter(
         { path: 'dashboard', element: <DashboardPage /> },
         { path: 'users', element: <UserListPage /> },
         { path: 'users/:id', element: <UserEditPage /> },
-        { path: 'aliases', element: <AliasReviewPage /> },
+        { path: 'aliases', element: <AliasListPage /> },
+        { path: 'aliases/review', element: <AliasReviewPage /> },
         { path: 'items', element: <ItemListPage /> },
         { path: 'items/:id', element: <ItemEditPage /> },
         { path: 'categories', element: <CategoryListPage /> },

@@ -61,6 +61,11 @@ func SetupRouter(
 			admin.GET("/aliases/review-queue", adminHandler.GetReviewQueue)
 			admin.POST("/aliases/:id/approve", adminHandler.ApproveAlias)
 			admin.POST("/aliases/:id/reject", adminHandler.RejectAlias)
+			admin.GET("/aliases", adminHandler.AdminListAliases)
+			admin.GET("/aliases/:id", adminHandler.AdminGetAlias)
+			admin.POST("/aliases", adminHandler.AdminCreateAlias)
+			admin.PUT("/aliases/:id", adminHandler.AdminUpdateAlias)
+			admin.DELETE("/aliases/:id", adminHandler.AdminDeleteAlias)
 			admin.GET("/stats", adminHandler.GetStats)
 
 			// 物品管理

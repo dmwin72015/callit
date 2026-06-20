@@ -9,6 +9,7 @@ import {
   GlobalOutlined,
   TagOutlined,
   TeamOutlined,
+  ToolOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router';
 
@@ -16,7 +17,8 @@ const { Sider } = Layout;
 
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '看板' },
-  { key: '/aliases', icon: <AuditOutlined />, label: '别名审核' },
+  { key: '/aliases', icon: <ToolOutlined />, label: '别名管理' },
+  { key: '/aliases/review', icon: <AuditOutlined />, label: '别名审核' },
   { key: '/users', icon: <UserOutlined />, label: '用户管理' },
   { key: '/items', icon: <FileTextOutlined />, label: '物品管理' },
   { key: '/categories', icon: <ApartmentOutlined />, label: '分类管理' },
@@ -29,6 +31,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+  const pathname = location.pathname.replace(/^\/admin/, '') || '/';
 
   const {
     token: { colorBgContainer: _unused },
@@ -53,7 +57,7 @@ export default function Sidebar() {
       <Menu
         theme="dark"
         mode="inline"
-        selectedKeys={[location.pathname]}
+        selectedKeys={[pathname]}
         items={menuItems}
         onClick={({ key }) => navigate(key)}
         style={{ marginTop: '1px' }}

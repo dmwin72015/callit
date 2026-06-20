@@ -95,3 +95,24 @@ func (a *Alias) ToResponse() *AliasResponse {
 		CreatedAt:   a.CreatedAt,
 	}
 }
+
+// AdminAliasCreateRequest 管理员创建别名请求
+type AdminAliasCreateRequest struct {
+	ItemID      int64      `json:"item_id" validate:"required"`
+	RegionID    int64      `json:"region_id" validate:"required"`
+	AliasName   string     `json:"alias_name" validate:"required,min=1,max=100"`
+	NameType    NameType   `json:"name_type" validate:"required,oneof=COMMON ALIAS"`
+	Status      string     `json:"status" validate:"required,oneof=PENDING APPROVED REJECTED"`
+	VotesCount  int        `json:"votes_count"`
+	SubmittedBy *int64     `json:"submitted_by"`
+}
+
+// AdminAliasUpdateRequest 管理员更新别名请求
+type AdminAliasUpdateRequest struct {
+	ItemID      int64    `json:"item_id" validate:"required"`
+	RegionID    int64    `json:"region_id" validate:"required"`
+	AliasName   string   `json:"alias_name" validate:"required,min=1,max=100"`
+	NameType    NameType `json:"name_type" validate:"required,oneof=COMMON ALIAS"`
+	Status      string   `json:"status" validate:"required,oneof=PENDING APPROVED REJECTED"`
+	VotesCount  int      `json:"votes_count"`
+}

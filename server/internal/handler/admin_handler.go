@@ -34,6 +34,7 @@ type AdminHandler struct {
 	regionService   service.RegionService
 	tagService     service.TagService
 	userService    service.UserService
+	aliasService   service.AliasService
 }
 
 func NewAdminHandler(
@@ -43,6 +44,7 @@ func NewAdminHandler(
 	regionService service.RegionService,
 	tagService service.TagService,
 	userService service.UserService,
+	aliasService service.AliasService,
 ) *AdminHandler {
 	return &AdminHandler{
 		reviewService:   reviewService,
@@ -51,6 +53,7 @@ func NewAdminHandler(
 		regionService:   regionService,
 		tagService:     tagService,
 		userService:    userService,
+		aliasService:    aliasService,
 	}
 }
 
@@ -162,6 +165,170 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 		"pending_reviews": 0,
 		"total_users":     0,
 	})
+}
+
+// ========== 别名管理 ==========
+
+// AdminListAliases godoc
+// @Summary      Admin list aliases
+// @Description  Get paginated list of aliases (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        status   query   string false "Filter by status" Enums(PENDING, APPROVED, REJECTED)
+// @Param        page     query   int    false "Page number"    default(1)
+// @Param        page_size query  int    false "Page size"       default(20)
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/aliases [get]
+func (h *AdminHandler) AdminListAliases(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	statusStr := c.Query("status")
+
+	var status *model.AliasStatus
+	if statusStr != "" {
+		s := model.AliasStatus(statusStr)
+		status = &s
+	}
+
+	aliases, total, err := h.aliasService.AdminList(c.Request.Context(), page, pageSize, status)
+	if err != nil {
+		InternalError(c, "failed to fetch aliases")
+		return
+	}
+
+	Success(c, gin.H{
+		"data":        aliases,
+		"page":        page,
+		"page_size":   pageSize,
+		"total":       total,
+	})
+}
+
+// AdminGetAlias godoc
+// @Summary      Admin get alias by ID
+// @Description  Get alias details (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Alias ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/aliases/{id} [get]
+func (h *AdminHandler) AdminGetAlias(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid alias id")
+		return
+	}
+
+	alias, err := h.aliasService.AdminGet(c.Request.Context(), id)
+	if err != nil {
+		NotFound(c, "alias not found")
+		return
+	}
+
+	Success(c, alias)
+}
+
+// AdminCreateAlias godoc
+// @Summary      Admin create alias
+// @Description  Create a new alias (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body model.AdminAliasCreateRequest true "Alias data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Router       /admin/aliases [post]
+func (h *AdminHandler) AdminCreateAlias(c *gin.Context) {
+	var req model.AdminAliasCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	alias, err := h.aliasService.AdminCreate(c.Request.Context(), &req)
+	if err != nil {
+		InternalError(c, "failed to create alias: "+err.Error())
+		return
+	}
+
+	Created(c, alias)
+}
+
+// AdminUpdateAlias godoc
+// @Summary      Admin update alias
+// @Description  Update an existing alias (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path      int64                true  "Alias ID"
+// @Param        request body model.AdminAliasUpdateRequest true "Alias data"
+// @Success      200 {object} map[string]interface{}
+// @Failure      400 {object} Response
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/aliases/{id} [put]
+func (h *AdminHandler) AdminUpdateAlias(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid alias id")
+		return
+	}
+
+	var req model.AdminAliasUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		BadRequest(c, err.Error())
+		return
+	}
+
+	alias, err := h.aliasService.AdminUpdate(c.Request.Context(), id, &req)
+	if err != nil {
+		InternalError(c, "failed to update alias: "+err.Error())
+		return
+	}
+
+	Success(c, alias)
+}
+
+// AdminDeleteAlias godoc
+// @Summary      Admin delete alias
+// @Description  Delete an alias (admin only)
+// @Tags         admin
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      int64  true  "Alias ID"
+// @Success      200 {object} map[string]interface{}
+// @Failure      401 {object} Response
+// @Failure      403 {object} Response
+// @Failure      404 {object} Response
+// @Router       /admin/aliases/{id} [delete]
+func (h *AdminHandler) AdminDeleteAlias(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		BadRequest(c, "invalid alias id")
+		return
+	}
+
+	if err := h.aliasService.AdminDelete(c.Request.Context(), id); err != nil {
+		InternalError(c, "failed to delete alias")
+		return
+	}
+
+	Success(c, gin.H{"message": "deleted"})
 }
 
 // ========== 物品管理 ==========
