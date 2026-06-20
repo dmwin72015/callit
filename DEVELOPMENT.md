@@ -30,61 +30,31 @@
 
 - Go 1.22+
 - Node.js 20+
-- Docker & Docker Compose（用于运行 PostgreSQL 和 Redis）
+- Docker & Docker Compose（用于 PostgreSQL 和 Redis）
 
-### 1. 启动基础设施
-
-只需在第一次启动或需要重置数据库时执行：
+### 1. 启动基础设施（只需一次）
 
 ```bash
-# 启动 PostgreSQL 和 Redis
 docker-compose up -d postgres redis
-
-# 验证服务状态
-docker-compose ps
 ```
 
-### 2. 配置环境变量
+### 2. 启动后端
 
 ```bash
-# 复制环境变量模板（如果还没配置）
-cp .env.example .env
-
-# 编辑配置（可选）
-vim .env
-```
-
-### 3. 启动后端服务
-
-```bash
-# 方式 A：直接运行（最快）
 ./server
-
-# 方式 B：使用 air 热重载（推荐开发时使用）
-# 安装: go install github.com/air-verse/air@latest
+# 或使用 air 热重载
 air
 ```
 
-后端将在 **http://localhost:8081** 启动。
-
-### 4. 启动前端管理后台
+### 3. 启动前端
 
 ```bash
-# 新开一个终端窗口
 cd admin
-
-# 安装依赖（首次运行）
 npm install
-
-# 启动开发服务器
 npm run dev
 ```
 
-前端将在 **http://localhost:3000** 启动。
-
-### 完成！
-
-访问 http://localhost:3000 即可使用管理后台。
+完成！访问 http://localhost:3000
 
 ## 测试账号
 
