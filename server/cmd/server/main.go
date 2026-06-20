@@ -28,6 +28,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/joho/godotenv"
 	"github.com/rdd/cnalias/server/internal/cache"
 	"github.com/rdd/cnalias/server/internal/config"
 	"github.com/rdd/cnalias/server/internal/handler"
@@ -39,6 +40,9 @@ import (
 )
 
 func main() {
+	// 加载 .env 文件（如果存在）
+	_ = godotenv.Load()
+
 	// 加载配置
 	cfg, err := config.Load()
 	if err != nil {
