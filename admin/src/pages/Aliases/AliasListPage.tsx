@@ -8,7 +8,6 @@ import {
   Modal,
   Form,
   Input,
-  InputNumber,
   Select,
   Popconfirm,
   Typography,
@@ -22,9 +21,13 @@ import {
   updateAdminAlias,
   deleteAdminAlias,
 } from '../../services/aliases';
-import type { AliasResponse } from '../../types';
+import { getItems } from '../../services/items';
+import { getRegions } from '../../services/regions';
+import { useAuthStore } from '../../stores/authStore';
+import type { AliasResponse, ItemResponse, RegionResponse } from '../../types';
 
 const { Title } = Typography;
+const { TextArea } = Input;
 
 const NAME_TYPE_OPTIONS = [
   { label: '通用名 (COMMON)', value: 'COMMON' },
@@ -108,16 +111,14 @@ export default function AliasListPage() {
       key: 'alias_name',
     },
     {
-      title: '物品ID',
-      dataIndex: 'item_id',
-      key: 'item_id',
-      width: 90,
+      title: '物品',
+      dataIndex: 'item_name',
+      key: 'item_name',
     },
     {
-      title: '地区ID',
-      dataIndex: 'region_id',
-      key: 'region_id',
-      width: 90,
+      title: '地区',
+      dataIndex: 'region_name',
+      key: 'region_name',
     },
     {
       title: '类型',
@@ -248,7 +249,10 @@ export default function AliasListPage() {
       >
         <AliasForm
           form={form}
-          onSubmit={(values) => createMutation.mutate(values as any)}
+          onSubmit={(values) => {
+            const { review_note, ...data } = values as Record<string, unknown>;
+            createMutation.mutate(data as any);
+          }}
           submitting={createMutation.isPending}
           onCancel={() => {
             setCreatingAlias(false);
@@ -269,12 +273,16 @@ export default function AliasListPage() {
         {editingAlias && (
           <AliasForm
             form={form}
-            onSubmit={(values) => updateMutation.mutate({ id: editingAlias.id, data: values as Parameters<typeof updateAdminAlias>[1] })}
+            onSubmit={(values) => {
+              const { review_note, ...data } = values as Record<string, unknown>;
+              updateMutation.mutate({ id: editingAlias.id, data: data as Parameters<typeof updateAdminAlias>[1] });
+            }}
             submitting={updateMutation.isPending}
             onCancel={() => {
               setEditingAlias(null);
               form.resetFields();
             }}
+            isEdit
           />
         )}
       </Modal>
@@ -287,12 +295,30 @@ function AliasForm({
   onSubmit,
   submitting,
   onCancel,
+  isEdit = false,
 }: {
   form: any;
   onSubmit: (values: Record<string, unknown>) => void;
   submitting: boolean;
   onCancel: () => void;
+  isEdit?: boolean;
 }) {
+  const [itemSearch, setItemSearch] = useState('');
+  const [regionSearch, setRegionSearch] = useState('');
+  const currentUserId = useAuthStore.getState().user?.id;
+
+  const { data: itemsData } = useQuery({
+    queryKey: ['admin-items-search', itemSearch],
+    queryFn: () => getItems({ page: 1, page_size: 20, search: itemSearch || undefined }),
+    enabled: !!itemSearch,
+  });
+
+  const { data: regionsData } = useQuery({
+    queryKey: ['admin-regions-search', regionSearch],
+    queryFn: () => getRegions({ page: 1, page_size: 20, search: regionSearch || undefined }),
+    enabled: !!regionSearch,
+  });
+
   return (
     <Form form={form} layout="vertical" onFinish={onSubmit}>
       <Form.Item name="alias_name" label="别名" rules={[{ required: true, message: '请输入别名' }]}>
@@ -300,11 +326,43 @@ function AliasForm({
       </Form.Item>
 
       <Space style={{ width: '100%' }}>
-        <Form.Item name="item_id" label="物品ID" rules={[{ required: true, message: '请输入物品ID' }]} style={{ flex: 1 }}>
-          <InputNumber style={{ width: '100%' }} placeholder="物品 ID" min={1} />
+        <Form.Item
+          name="item_id"
+          label="物品"
+          rules={[{ required: true, message: '请选择物品' }]}
+          style={{ flex: 1 }}
+        >
+          <Select
+            showSearch
+            filterOption={false}
+            placeholder="搜索并选择物品"
+            options={itemsData?.data?.map((item: ItemResponse) => ({
+              label: `[${item.id}] ${item.name}`,
+              value: item.id,
+            }))}
+            onSearch={(val) => setItemSearch(val)}
+            onChange={() => setItemSearch('')}
+            notFoundContent={itemSearch ? '搜索中...' : '请输入关键词搜索'}
+          />
         </Form.Item>
-        <Form.Item name="region_id" label="地区ID" rules={[{ required: true, message: '请输入地区ID' }]} style={{ flex: 1 }}>
-          <InputNumber style={{ width: '100%' }} placeholder="地区 ID" min={1} />
+        <Form.Item
+          name="region_id"
+          label="地区"
+          rules={[{ required: true, message: '请选择地区' }]}
+          style={{ flex: 1 }}
+        >
+          <Select
+            showSearch
+            filterOption={false}
+            placeholder="搜索并选择地区"
+            options={regionsData?.data?.map((region: RegionResponse) => ({
+              label: `[${region.id}] ${region.name} (${region.code})`,
+              value: region.id,
+            }))}
+            onSearch={(val) => setRegionSearch(val)}
+            onChange={() => setRegionSearch('')}
+            notFoundContent={regionSearch ? '搜索中...' : '请输入关键词搜索'}
+          />
         </Form.Item>
       </Space>
 
@@ -312,19 +370,24 @@ function AliasForm({
         <Form.Item name="name_type" label="名称类型" rules={[{ required: true, message: '请选择类型' }]} style={{ flex: 1 }}>
           <Select placeholder="请选择" options={NAME_TYPE_OPTIONS} />
         </Form.Item>
-        <Form.Item name="status" label="状态" rules={[{ required: true, message: '请选择状态' }]} style={{ flex: 1 }}>
-          <Select placeholder="请选择" options={STATUS_OPTIONS} />
-        </Form.Item>
+        {!isEdit && (
+          <Form.Item name="status" label="状态" initialValue="PENDING" style={{ flex: 1 }}>
+            <Select disabled options={NAME_TYPE_OPTIONS.map((opt) => ({ ...opt, label: opt.label + ' (自动)' }))} />
+          </Form.Item>
+        )}
       </Space>
 
-      <Space style={{ width: '100%' }}>
-        <Form.Item name="votes_count" label="投票数" initialValue={0} style={{ flex: 1 }}>
-          <InputNumber style={{ width: '100%' }} min={0} />
-        </Form.Item>
-        <Form.Item name="submitted_by" label="提交者ID" style={{ flex: 1 }}>
-          <InputNumber style={{ width: '100%' }} placeholder="可选" min={1} />
-        </Form.Item>
-      </Space>
+      <Form.Item name="review_note" label="备注">
+        <TextArea rows={2} placeholder="选填：添加备注信息" />
+      </Form.Item>
+
+      <Form.Item style={{ display: 'none' }} name="submitted_by" initialValue={currentUserId}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item style={{ display: 'none' }} name="votes_count" initialValue={0}>
+        <Input />
+      </Form.Item>
 
       <Form.Item>
         <Space>
