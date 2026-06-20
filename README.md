@@ -45,6 +45,19 @@ cd admin && npm install && npm run dev
 
 详细开发指南请查看 [DEVELOPMENT.md](./DEVELOPMENT.md)。
 
+## 生产部署
+
+使用 Docker 一键部署：
+
+```bash
+docker-compose up -d
+```
+
+前端单独构建：
+```bash
+cd admin && npm run build
+```
+
 ## 测试账号
 
 - **邮箱**：`admin@test.com`
