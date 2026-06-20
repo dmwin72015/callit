@@ -36,25 +36,6 @@ services:
     networks:
       - cnalias-network
 
-  # 可选：pgAdmin for database management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: cnalias-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@cnalias.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - cnalias-network
-    profiles:
-      - tools
-
   # 可选：Redis Commander for Redis management
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -71,12 +52,6 @@ services:
       - tools
 
 volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-  pgadmin_data:
-    driver: local
 
 networks:
   cnalias-network:
