@@ -113,6 +113,7 @@ export default function RegionListPage() {
       title: '名称',
       dataIndex: 'name',
       key: 'name',
+      width: 160,
     },
     {
       title: '代码',
