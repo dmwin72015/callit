@@ -31,7 +31,7 @@ RUN addgroup -g 1001 -S appgroup && \
 COPY --from=builder /app/server .
 
 # Copy migrations
-COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/server/migrations ./migrations
 
 # Change ownership
 RUN chown -R appuser:appgroup /root

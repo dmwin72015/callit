@@ -13,7 +13,7 @@ func TestRegionType_Validate(t *testing.T) {
 	}{
 		{"valid province", RegionTypeProvince, true},
 		{"valid city", RegionTypeCity, true},
-		{"valid dialect", RegionTypeDialect, true},
+		{"valid dialect", RegionTypeDistrict, true},
 		{"valid custom", RegionTypeCustom, true},
 		{"invalid type", "INVALID", false},
 	}
@@ -21,7 +21,7 @@ func TestRegionType_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			switch tt.rt {
-			case RegionTypeProvince, RegionTypeCity, RegionTypeDialect, RegionTypeCustom:
+			case RegionTypeProvince, RegionTypeCity, RegionTypeDistrict, RegionTypeCustom:
 				assert.True(t, true)
 			default:
 				assert.False(t, tt.valid)

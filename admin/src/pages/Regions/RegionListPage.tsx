@@ -91,10 +91,30 @@ export default function RegionListPage() {
       width: 120,
     },
     {
-      title: '描述',
-      dataIndex: 'description',
-      key: 'description',
-      ellipsis: true,
+      title: '邮编',
+      dataIndex: 'postal_code',
+      key: 'postal_code',
+      width: 100,
+    },
+    {
+      title: '区号',
+      dataIndex: 'area_code',
+      key: 'area_code',
+      width: 100,
+    },
+    {
+      title: '经度',
+      dataIndex: 'longitude',
+      key: 'longitude',
+      width: 100,
+      render: (v) => (v != null ? Number(v).toFixed(4) : '-'),
+    },
+    {
+      title: '纬度',
+      dataIndex: 'latitude',
+      key: 'latitude',
+      width: 100,
+      render: (v) => (v != null ? Number(v).toFixed(4) : '-'),
     },
     {
       title: '创建时间',
@@ -204,8 +224,20 @@ export default function RegionListPage() {
             <Input placeholder="请输入地区代码" />
           </Form.Item>
 
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="请输入地区描述" />
+          <Form.Item name="postal_code" label="邮编">
+            <Input placeholder="如：100000" />
+          </Form.Item>
+
+          <Form.Item name="area_code" label="区号">
+            <Input placeholder="如：010" />
+          </Form.Item>
+
+          <Form.Item name="longitude" label="经度">
+            <Input type="number" step="0.0001" placeholder="如：116.4074" />
+          </Form.Item>
+
+          <Form.Item name="latitude" label="纬度">
+            <Input type="number" step="0.0001" placeholder="如：39.9042" />
           </Form.Item>
 
           <Form.Item>
@@ -253,8 +285,20 @@ export default function RegionListPage() {
             <Input placeholder="请输入地区代码" />
           </Form.Item>
 
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="请输入地区描述" />
+          <Form.Item name="postal_code" label="邮编">
+            <Input placeholder="如：100000" />
+          </Form.Item>
+
+          <Form.Item name="area_code" label="区号">
+            <Input placeholder="如：010" />
+          </Form.Item>
+
+          <Form.Item name="longitude" label="经度">
+            <Input type="number" step="0.0001" placeholder="如：116.4074" />
+          </Form.Item>
+
+          <Form.Item name="latitude" label="纬度">
+            <Input type="number" step="0.0001" placeholder="如：39.9042" />
           </Form.Item>
 
           <Form.Item>

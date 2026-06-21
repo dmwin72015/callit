@@ -5,6 +5,7 @@ bin/
 *.so
 *.dylib
 server/server
+server/migrate
 
 # Go
 vendor/
@@ -57,4 +58,14 @@ tmp/server
 
 # other
 .superpowers
+
+# Temporary dev scripts (root-level only)
+/scripts/
+
+# Claude Code project memory
+memory/
+
+# Python cache
+server/scripts/__pycache__/
+*.pyc
 

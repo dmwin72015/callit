@@ -58,6 +58,7 @@ export interface AliasResponse {
   alias_name: string;
   item_name: string;
   region_name: string;
+  region_code: string;
   submitted_by: string;
   votes_count: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -91,9 +92,13 @@ export interface RegionResponse {
   id: number;
   name: string;
   parent_id: number | null;
-  region_type: 'PROVINCE' | 'CITY' | 'DISTRICT';
+  region_type: 'PROVINCE' | 'CITY' | 'DISTRICT' | 'STREET';
   code: string;
   sort_order: number;
+  latitude?: number;
+  longitude?: number;
+  postal_code?: string;
+  area_code?: string;
   children?: RegionResponse[];
 }
 

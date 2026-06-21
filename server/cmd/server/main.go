@@ -23,7 +23,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -42,7 +44,7 @@ import (
 
 func main() {
 	// 加载 .env 文件（如果存在）
-	_ = godotenv.Load()
+	_ = godotenv.Load("../.env")
 
 	// 加载配置
 	cfg, err := config.Load()
@@ -65,6 +67,20 @@ func main() {
 	db, err := pkg.NewDB(&cfg.Database, cfg.App.Environment)
 	if err != nil {
 		pkg.Logger.Fatal("Failed to connect database", zap.Error(err))
+	}
+
+	// 执行数据库迁移 (golang-migrate)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		url.QueryEscape(cfg.Database.User),
+		url.QueryEscape(cfg.Database.Password),
+		cfg.Database.Host, cfg.Database.Port,
+		cfg.Database.DBName, cfg.Database.SSLMode)
+	cmd := exec.Command("./migrate", "-path", "./migrations", "-database", dsn, "up")
+	cmd.Dir = "."
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		pkg.Logger.Fatal("Failed to run migrations", zap.Error(err))
 	}
 
 	// 初始化Redis

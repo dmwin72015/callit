@@ -121,6 +121,12 @@ export default function AliasListPage() {
       key: 'region_name',
     },
     {
+      title: '地区编码',
+      dataIndex: 'region_code',
+      key: 'region_code',
+      width: 120,
+    },
+    {
       title: '类型',
       dataIndex: 'name_type',
       key: 'name_type',
@@ -346,7 +352,7 @@ function AliasForm({
           />
         </Form.Item>
         <Form.Item
-          name="region_id"
+          name="region_code"
           label="地区"
           rules={[{ required: true, message: '请选择地区' }]}
           style={{ flex: 1 }}
@@ -356,8 +362,8 @@ function AliasForm({
             filterOption={false}
             placeholder="搜索并选择地区"
             options={regionsData?.data?.map((region: RegionResponse) => ({
-              label: `[${region.id}] ${region.name} (${region.code})`,
-              value: region.id,
+              label: `[${region.code}] ${region.name}`,
+              value: region.code,
             }))}
             onSearch={(val) => setRegionSearch(val)}
             onChange={() => setRegionSearch('')}

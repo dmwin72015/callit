@@ -36,7 +36,7 @@ export const getAdminAlias = async (id: number): Promise<AliasResponse> => {
 
 export const createAdminAlias = async (data: {
   item_id: number;
-  region_id: number;
+  region_code: string;
   alias_name: string;
   name_type: string;
   status: string;
@@ -49,7 +49,7 @@ export const createAdminAlias = async (data: {
 
 export const updateAdminAlias = async (id: number, data: {
   item_id: number;
-  region_id: number;
+  region_code: string;
   alias_name: string;
   name_type: string;
   status: string;

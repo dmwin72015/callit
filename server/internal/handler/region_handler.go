@@ -23,7 +23,7 @@ func NewRegionHandler(regionService service.RegionService) *RegionHandler {
 // @Tags         regions
 // @Accept       json
 // @Produce      json
-// @Param        region_type query   string false "Filter by region type" Enums(PROVINCE, CITY, DIALECT, CUSTOM)
+// @Param        region_type query   string false "Filter by region type" Enums(PROVINCE, CITY, DISTRICT, CUSTOM)
 // @Param        parent_id   query   int64  false "Filter by parent region ID"
 // @Success      200 {object} Response{data=[]model.RegionResponse}
 // @Failure      400 {object} Response
