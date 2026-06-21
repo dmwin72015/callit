@@ -7,16 +7,16 @@ import {
   Tag,
   Switch,
   Button,
-  Modal,
-  Form,
+  Typography,
   Select,
   Input,
   Popconfirm,
-  Typography,
   App,
+  Form,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getUsers, updateUser, deleteUser } from '../../services/users';
+import UserFormModal from './components/UserFormModal';
 import type { UserResponse } from '../../types';
 
 const { Title } = Typography;
@@ -49,7 +49,6 @@ export default function UserListPage() {
       updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      message.success('更新成功');
       setEditingUser(null);
       form.resetFields();
     },
@@ -60,7 +59,6 @@ export default function UserListPage() {
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      message.success('删除成功');
     },
     onError: () => message.error('删除失败'),
   });
@@ -198,48 +196,20 @@ export default function UserListPage() {
         />
       </Card>
 
-      <Modal
-        title="编辑用户"
+      <UserFormModal
         open={!!editingUser}
+        form={form}
+        submitting={updateMutation.isPending}
+        onSubmit={(values) => {
+          if (editingUser) {
+            updateMutation.mutate({ id: editingUser.id, data: values });
+          }
+        }}
         onCancel={() => {
           setEditingUser(null);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => {
-            if (editingUser) {
-              updateMutation.mutate({ id: editingUser.id, data: values });
-            }
-          }}
-        >
-          <Form.Item name="username" label="用户名" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="email" label="邮箱" rules={[{ required: true, type: 'email' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="role" label="角色" rules={[{ required: true }]}>
-            <Select
-              options={[
-                { value: 'ADMIN', label: '管理员' },
-                { value: 'USER', label: '用户' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
-                保存
-              </Button>
-              <Button onClick={() => setEditingUser(null)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
     </div>
   );
 }

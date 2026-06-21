@@ -5,17 +5,10 @@ import {
   Card,
   Space,
   Button,
-  Modal,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Popconfirm,
   Typography,
-  App,
   TreeSelect,
-  Row,
-  Col,
+  Select,
+  Form,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -27,17 +20,10 @@ import {
   getRegionTree,
 } from '../../services/regions';
 import type { RegionResponse } from '../../types';
+import RegionCreateModal from './components/RegionCreateModal';
+import RegionEditModal from './components/RegionEditModal';
 
 const { Title } = Typography;
-
-const REGION_TYPE_OPTIONS = [
-  { label: '大区', value: 'MACRO_REGION' },
-  { label: '省/直辖市', value: 'PROVINCE' },
-  { label: '市', value: 'CITY' },
-  { label: '区/县', value: 'DISTRICT' },
-  { label: '街道/乡镇', value: 'STREET' },
-  { label: '自定义', value: 'CUSTOM' },
-];
 
 function buildTreeSelectData(nodes: RegionResponse[]): { value: number; title: string; children?: any }[] {
   return nodes.map((node) => ({
@@ -50,7 +36,6 @@ function buildTreeSelectData(nodes: RegionResponse[]): { value: number; title: s
 }
 
 export default function RegionListPage() {
-  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -82,30 +67,19 @@ export default function RegionListPage() {
     return buildTreeSelectData(treeData);
   }, [treeData]);
 
-  const watchedRegionType = Form.useWatch('regionType', form);
-
   const { data: parentTreeData } = useQuery({
-    queryKey: ['regionTree', 'parent', watchedRegionType],
+    queryKey: ['regionTree', 'parent'],
     queryFn: () => getRegionTree(undefined, 'PROVINCE', 0),
     staleTime: 5 * 60 * 1000,
   });
-
-  const parentTreeSelectData = useMemo(() => {
-    if (!parentTreeData) return [];
-    return buildTreeSelectData(parentTreeData);
-  }, [parentTreeData]);
 
   const createMutation = useMutation({
     mutationFn: (values: any) => createRegion({ ...values, parentId: values.parentId ?? undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['regions'] });
       queryClient.invalidateQueries({ queryKey: ['regionTree'] });
-      message.success('创建成功');
       setCreatingRegion(false);
       form.resetFields();
-    },
-    onError: (err: any) => {
-      message.error(err?.message || '创建失败');
     },
   });
 
@@ -115,12 +89,8 @@ export default function RegionListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['regions'] });
       queryClient.invalidateQueries({ queryKey: ['regionTree'] });
-      message.success('更新成功');
       setEditingRegion(null);
       form.resetFields();
-    },
-    onError: (err: any) => {
-      message.error(err?.message || '更新失败');
     },
   });
 
@@ -129,9 +99,7 @@ export default function RegionListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['regions'] });
       queryClient.invalidateQueries({ queryKey: ['regionTree'] });
-      message.success('删除成功');
     },
-    onError: () => message.error('删除失败'),
   });
 
   const columns: ColumnsType<RegionResponse> = [
@@ -226,16 +194,14 @@ export default function RegionListPage() {
           >
             编辑
           </Button>
-          <Popconfirm
-            title="确定删除此地区？"
-            onConfirm={() => deleteMutation.mutate(record.id)}
-            okText="确定"
-            cancelText="取消"
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => deleteMutation.mutate(record.id)}
           >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              删除
-            </Button>
-          </Popconfirm>
+            删除
+          </Button>
         </Space>
       ),
     },
@@ -255,7 +221,14 @@ export default function RegionListPage() {
               setRegionType(val);
               setPage(1);
             }}
-            options={REGION_TYPE_OPTIONS}
+            options={[
+              { label: '大区', value: 'MACRO_REGION' },
+              { label: '省/直辖市', value: 'PROVINCE' },
+              { label: '市', value: 'CITY' },
+              { label: '区/县', value: 'DISTRICT' },
+              { label: '街道/乡镇', value: 'STREET' },
+              { label: '自定义', value: 'CUSTOM' },
+            ]}
           />
           <TreeSelect
             placeholder="上级地区"
@@ -297,177 +270,33 @@ export default function RegionListPage() {
         />
       </Card>
 
-      <Modal
-        title="新增地区"
+      <RegionCreateModal
         open={creatingRegion}
+        form={form}
+        parentTreeData={parentTreeData}
+        submitting={createMutation.isPending}
+        onSubmit={(values) => createMutation.mutate(values)}
         onCancel={() => {
           setCreatingRegion(false);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => createMutation.mutate(values)}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="name"
-                label="地区名称"
-                rules={[{ required: true, message: '请输入地区名称' }]}
-              >
-                <Input placeholder="请输入地区名称" />
-              </Form.Item>
+      />
 
-              <Form.Item
-                name="code"
-                label="代码"
-                rules={[{ required: true, message: '请输入地区代码' }]}
-              >
-                <Input placeholder="如：110101、440300" />
-              </Form.Item>
-
-              <Form.Item
-                name="regionType"
-                label="地区类型"
-                rules={[{ required: true, message: '请选择地区类型' }]}
-              >
-                <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
-              </Form.Item>
-
-              <Form.Item name="parentId" label="上级地区">
-                <TreeSelect
-                  placeholder="请选择上级地区（可选）"
-                  treeData={parentTreeSelectData}
-                  allowClear
-                  showSearch
-                  treeLine
-                />
-              </Form.Item>
-
-              <Form.Item name="sortOrder" label="排序" initialValue={0}>
-                <InputNumber min={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="postalCode" label="邮编">
-                <Input placeholder="如：100000" />
-              </Form.Item>
-
-              <Form.Item name="areaCode" label="区号">
-                <Input placeholder="如：010" />
-              </Form.Item>
-
-              <Form.Item name="longitude" label="经度">
-                <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
-              </Form.Item>
-
-              <Form.Item name="latitude" label="纬度">
-                <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
-                创建
-              </Button>
-              <Button onClick={() => setCreatingRegion(false)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="编辑地区"
+      <RegionEditModal
         open={!!editingRegion}
+        form={form}
+        parentTreeData={parentTreeData}
+        submitting={updateMutation.isPending}
+        onSubmit={(values) => {
+          if (editingRegion) {
+            updateMutation.mutate({ id: editingRegion.id, data: values });
+          }
+        }}
         onCancel={() => {
           setEditingRegion(null);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => {
-            if (editingRegion) {
-              updateMutation.mutate({ id: editingRegion.id, data: values });
-            }
-          }}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="name"
-                label="地区名称"
-                rules={[{ required: true, message: '请输入地区名称' }]}
-              >
-                <Input placeholder="请输入地区名称" />
-              </Form.Item>
-
-              <Form.Item
-                name="code"
-                label="代码"
-                rules={[{ required: true, message: '请输入地区代码' }]}
-              >
-                <Input placeholder="如：110101、440300" />
-              </Form.Item>
-
-              <Form.Item
-                name="regionType"
-                label="地区类型"
-                rules={[{ required: true, message: '请选择地区类型' }]}
-              >
-                <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
-              </Form.Item>
-
-              <Form.Item name="parentId" label="上级地区">
-                <TreeSelect
-                  placeholder="请选择上级地区（可选）"
-                  treeData={parentTreeSelectData}
-                  allowClear
-                  showSearch
-                  treeLine
-                />
-              </Form.Item>
-
-              <Form.Item name="sortOrder" label="排序">
-                <InputNumber min={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="postalCode" label="邮编">
-                <Input placeholder="如：100000" />
-              </Form.Item>
-
-              <Form.Item name="areaCode" label="区号">
-                <Input placeholder="如：010" />
-              </Form.Item>
-
-              <Form.Item name="longitude" label="经度">
-                <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
-              </Form.Item>
-
-              <Form.Item name="latitude" label="纬度">
-                <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
-                保存
-              </Button>
-              <Button onClick={() => setEditingRegion(null)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
     </div>
   );
 }

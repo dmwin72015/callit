@@ -56,8 +56,9 @@ Thumbs.db
 # Air (hot reload)
 tmp/server
 
-# other
-.superpowers
+# AI tooling artifacts
+.superpowers/
+docs/superpowers/
 
 # Temporary dev scripts (root-level only)
 /scripts/
@@ -68,5 +69,3 @@ memory/
 # Python cache
 server/scripts/__pycache__/
 *.pyc
-
-doc/superpowers

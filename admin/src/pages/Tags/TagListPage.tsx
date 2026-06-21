@@ -5,16 +5,16 @@ import {
   Card,
   Space,
   Button,
-  Modal,
-  Form,
+  Typography,
   Input,
   Popconfirm,
-  Typography,
   App,
+  Form,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getTags, createTag, updateTag, deleteTag } from '../../services/tags';
+import TagFormModal from './components/TagFormModal';
 import type { TagResponse } from '../../types';
 
 const { Title } = Typography;
@@ -44,7 +44,6 @@ export default function TagListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
-      message.success('创建成功');
       setCreatingTag(false);
       form.resetFields();
     },
@@ -56,7 +55,6 @@ export default function TagListPage() {
       updateTag(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      message.success('更新成功');
       setEditingTag(null);
       form.resetFields();
     },
@@ -67,7 +65,6 @@ export default function TagListPage() {
     mutationFn: deleteTag,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      message.success('删除成功');
     },
     onError: () => message.error('删除失败'),
   });
@@ -106,8 +103,8 @@ export default function TagListPage() {
     },
     {
       title: '别名数量',
-      dataIndex: 'aliases_count',
-      key: 'aliases_count',
+      dataIndex: 'aliasesCount',
+      key: 'aliasesCount',
       width: 120,
     },
     {
@@ -185,91 +182,32 @@ export default function TagListPage() {
         />
       </Card>
 
-      <Modal
-        title="新增标签"
+      <TagFormModal
         open={creatingTag}
+        form={form}
+        submitting={createMutation.isPending}
+        onSubmit={(values) => createMutation.mutate(values)}
         onCancel={() => {
           setCreatingTag(false);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => createMutation.mutate(values)}
-        >
-          <Form.Item
-            name="name"
-            label="标签名称"
-            rules={[{ required: true, message: '请输入标签名称' }]}
-          >
-            <Input placeholder="请输入标签名称" />
-          </Form.Item>
+      />
 
-          <Form.Item
-            name="color"
-            label="颜色"
-            rules={[{ required: true, message: '请输入颜色值' }]}
-          >
-            <Input placeholder="例如: #1890ff" />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
-                创建
-              </Button>
-              <Button onClick={() => setCreatingTag(false)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="编辑标签"
+      <TagFormModal
         open={!!editingTag}
+        form={form}
+        submitting={updateMutation.isPending}
+        isEdit
+        onSubmit={(values) => {
+          if (editingTag) {
+            updateMutation.mutate({ id: editingTag.id, data: values });
+          }
+        }}
         onCancel={() => {
           setEditingTag(null);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => {
-            if (editingTag) {
-              updateMutation.mutate({ id: editingTag.id, data: values });
-            }
-          }}
-        >
-          <Form.Item
-            name="name"
-            label="标签名称"
-            rules={[{ required: true, message: '请输入标签名称' }]}
-          >
-            <Input placeholder="请输入标签名称" />
-          </Form.Item>
-
-          <Form.Item
-            name="color"
-            label="颜色"
-            rules={[{ required: true, message: '请输入颜色值' }]}
-          >
-            <Input placeholder="例如: #1890ff" />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
-                保存
-              </Button>
-              <Button onClick={() => setEditingTag(null)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
     </div>
   );
 }

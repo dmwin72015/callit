@@ -5,16 +5,16 @@ import {
   Card,
   Space,
   Button,
-  Modal,
-  Form,
+  Typography,
   Input,
   Popconfirm,
-  Typography,
   App,
+  Form,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../services/categories';
+import CategoryFormModal from './components/CategoryFormModal';
 import type { CategoryResponse } from '../../types';
 
 const { Title } = Typography;
@@ -44,7 +44,6 @@ export default function CategoryListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
-      message.success('创建成功');
       setCreatingCategory(false);
       form.resetFields();
     },
@@ -56,7 +55,6 @@ export default function CategoryListPage() {
       updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      message.success('更新成功');
       setEditingCategory(null);
       form.resetFields();
     },
@@ -67,7 +65,6 @@ export default function CategoryListPage() {
     mutationFn: deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      message.success('删除成功');
     },
     onError: () => message.error('删除失败'),
   });
@@ -168,83 +165,32 @@ export default function CategoryListPage() {
         />
       </Card>
 
-      <Modal
-        title="新增分类"
+      <CategoryFormModal
         open={creatingCategory}
+        form={form}
+        submitting={createMutation.isPending}
+        onSubmit={(values) => createMutation.mutate(values)}
         onCancel={() => {
           setCreatingCategory(false);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => createMutation.mutate(values)}
-        >
-          <Form.Item
-            name="name"
-            label="分类名称"
-            rules={[{ required: true, message: '请输入分类名称' }]}
-          >
-            <Input placeholder="请输入分类名称" />
-          </Form.Item>
+      />
 
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="请输入分类描述" />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
-                创建
-              </Button>
-              <Button onClick={() => setCreatingCategory(false)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="编辑分类"
+      <CategoryFormModal
         open={!!editingCategory}
+        form={form}
+        submitting={updateMutation.isPending}
+        isEdit
+        onSubmit={(values) => {
+          if (editingCategory) {
+            updateMutation.mutate({ id: editingCategory.id, data: values });
+          }
+        }}
         onCancel={() => {
           setEditingCategory(null);
           form.resetFields();
         }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={(values) => {
-            if (editingCategory) {
-              updateMutation.mutate({ id: editingCategory.id, data: values });
-            }
-          }}
-        >
-          <Form.Item
-            name="name"
-            label="分类名称"
-            rules={[{ required: true, message: '请输入分类名称' }]}
-          >
-            <Input placeholder="请输入分类名称" />
-          </Form.Item>
-
-          <Form.Item name="description" label="描述">
-            <Input.TextArea rows={3} placeholder="请输入分类描述" />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={updateMutation.isPending}>
-                保存
-              </Button>
-              <Button onClick={() => setEditingCategory(null)}>取消</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
     </div>
   );
 }
