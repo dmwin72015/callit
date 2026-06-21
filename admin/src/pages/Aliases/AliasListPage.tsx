@@ -22,7 +22,7 @@ import {
   deleteAdminAlias,
 } from '../../services/aliases';
 import { getItems } from '../../services/items';
-import { getRegions } from '../../services/regions';
+import { searchRegions } from '../../services/regions';
 import { useAuthStore } from '../../stores/authStore';
 import type { AliasResponse, ItemResponse, RegionResponse } from '../../types';
 
@@ -321,7 +321,7 @@ function AliasForm({
 
   const { data: regionsData } = useQuery({
     queryKey: ['admin-regions-search', regionSearch],
-    queryFn: () => getRegions({ page: 1, page_size: 20, search: regionSearch || undefined }),
+    queryFn: () => searchRegions(regionSearch),
     enabled: !!regionSearch,
   });
 
@@ -361,7 +361,7 @@ function AliasForm({
             showSearch
             filterOption={false}
             placeholder="搜索并选择地区"
-            options={regionsData?.data?.map((region: RegionResponse) => ({
+            options={regionsData?.map((region: RegionResponse) => ({
               label: `[${region.code}] ${region.name}`,
               value: region.code,
             }))}

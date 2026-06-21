@@ -27,17 +27,17 @@ CREATE TABLE IF NOT EXISTS regions (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_regions_parent_id ON regions(parent_id);
-CREATE INDEX idx_regions_type ON regions(region_type);
-CREATE INDEX idx_regions_parent_type ON regions(parent_id, region_type);
-CREATE INDEX idx_regions_parent_code ON regions(parent_code);
+CREATE INDEX IF NOT EXISTS idx_regions_parent_id ON regions(parent_id);
+CREATE INDEX IF NOT EXISTS idx_regions_type ON regions(region_type);
+CREATE INDEX IF NOT EXISTS idx_regions_parent_type ON regions(parent_id, region_type);
+CREATE INDEX IF NOT EXISTS idx_regions_parent_code ON regions(parent_code);
 
-COMMENT ON TABLE regions IS '行政地区表，四级结构：大区→省→市→区县';
-COMMENT ON COLUMN regions.code IS '行政区划代码：省市区为6位GB/T 2260，街道为9位，对外关联的唯一标识';
-COMMENT ON COLUMN regions.region_type IS 'CUSTOM=自定义, MACRO_REGION=大区, PROVINCE=省, CITY=市, DISTRICT=区县';
-COMMENT ON COLUMN regions.parent_id IS '父级地区ID（逻辑关联，树形结构）';
-COMMENT ON COLUMN regions.parent_code IS '父级地区code（冗余字段，避免join查询父级code）';
-COMMENT ON COLUMN regions.latitude IS '纬度（WGS84）';
-COMMENT ON COLUMN regions.longitude IS '经度（WGS84）';
-COMMENT ON COLUMN regions.postal_code IS '邮政编码';
-COMMENT ON COLUMN regions.area_code IS '区号';
+Comment ON TABLE regions IS '行政地区表，四级结构：大区→省→市→区县';
+Comment ON COLUMN regions.code IS '行政区划代码：省市区为6位GB/T 2260，街道为9位，对外关联的唯一标识';
+Comment ON COLUMN regions.region_type IS 'CUSTOM=自定义, MACRO_REGION=大区, PROVINCE=省, CITY=市, DISTRICT=区县';
+Comment ON COLUMN regions.parent_id IS '父级地区ID（逻辑关联，树形结构）';
+Comment ON COLUMN regions.parent_code IS '父级地区code（冗余字段，避免join查询父级code）';
+Comment ON COLUMN regions.latitude IS '纬度（WGS84）';
+Comment ON COLUMN regions.longitude IS '经度（WGS84）';
+Comment ON COLUMN regions.postal_code IS '邮政编码';
+Comment ON COLUMN regions.area_code IS '区号';

@@ -18,11 +18,11 @@ CREATE TABLE IF NOT EXISTS items (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX uniq_items_name_category ON items(name, category_slug);
-CREATE INDEX idx_items_category_slug ON items(category_slug);
-CREATE INDEX idx_items_created_by_slug ON items(created_by_slug);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_items_name_category ON items(name, category_slug);
+CREATE INDEX IF NOT EXISTS idx_items_category_slug ON items(category_slug);
+CREATE INDEX IF NOT EXISTS idx_items_created_by_slug ON items(created_by_slug);
 
-COMMENT ON TABLE items IS '物品表';
-COMMENT ON COLUMN items.slug IS '物品唯一标识符，别名表等通过此字段关联物品';
-COMMENT ON COLUMN items.category_slug IS '关联分类的 slug（逻辑关联，无物理外键）';
-COMMENT ON COLUMN items.created_by_slug IS '创建者的 slug（逻辑关联，无物理外键）';
+Comment ON TABLE items IS '物品表';
+Comment ON COLUMN items.slug IS '物品唯一标识符，别名表等通过此字段关联物品';
+Comment ON COLUMN items.category_slug IS '关联分类的 slug（逻辑关联，无物理外键）';
+Comment ON COLUMN items.created_by_slug IS '创建者的 slug（逻辑关联，无物理外键）';

@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS review_logs (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_review_logs_alias_slug ON review_logs(item_slug, region_code, alias_name);
-CREATE INDEX idx_review_logs_reviewer_slug ON review_logs(reviewer_slug);
-CREATE INDEX idx_review_logs_created_at ON review_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_review_logs_alias_slug ON review_logs(item_slug, region_code, alias_name);
+CREATE INDEX IF NOT EXISTS idx_review_logs_reviewer_slug ON review_logs(reviewer_slug);
+CREATE INDEX IF NOT EXISTS idx_review_logs_created_at ON review_logs(created_at);
 
-COMMENT ON TABLE review_logs IS '审核日志表，记录所有审核操作';
-COMMENT ON COLUMN review_logs.item_slug IS '关联别名的物品 slug（逻辑关联）';
-COMMENT ON COLUMN review_logs.region_code IS '关联别名的地区 code（逻辑关联）';
-COMMENT ON COLUMN review_logs.alias_name IS '关联别名的名称（逻辑关联）';
-COMMENT ON COLUMN review_logs.reviewer_slug IS '审核者 slug（逻辑关联）';
+Comment ON TABLE review_logs IS '审核日志表，记录所有审核操作';
+Comment ON COLUMN review_logs.item_slug IS '关联别名的物品 slug（逻辑关联）';
+Comment ON COLUMN review_logs.region_code IS '关联别名的地区 code（逻辑关联）';
+Comment ON COLUMN review_logs.alias_name IS '关联别名的名称（逻辑关联）';
+Comment ON COLUMN review_logs.reviewer_slug IS '审核者 slug（逻辑关联）';

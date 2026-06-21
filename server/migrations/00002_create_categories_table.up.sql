@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS categories (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX uniq_categories_name_parent ON categories(name, parent_id);
-CREATE INDEX idx_categories_parent_id ON categories(parent_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_categories_name_parent ON categories(name, parent_id);
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
 
-COMMENT ON TABLE categories IS '物品分类表';
-COMMENT ON COLUMN categories.slug IS '分类唯一标识符，物品表通过此字段关联分类';
+Comment ON TABLE categories IS '物品分类表';
+Comment ON COLUMN categories.slug IS '分类唯一标识符，物品表通过此字段关联分类';

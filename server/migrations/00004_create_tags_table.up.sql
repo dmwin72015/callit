@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS tags (
 );
 
 
-COMMENT ON TABLE tags IS '物品标签表';
-COMMENT ON COLUMN tags.name IS '标签名称，对外关联的唯一标识';
+Comment ON TABLE tags IS '物品标签表';
+Comment ON COLUMN tags.name IS '标签名称，对外关联的唯一标识';

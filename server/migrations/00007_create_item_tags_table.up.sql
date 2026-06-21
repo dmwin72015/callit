@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS item_tags (
 );
 
 -- PRIMARY KEY auto-creates item_tags_pkey index
-CREATE INDEX idx_item_tags_item_slug ON item_tags(item_slug);
-CREATE INDEX idx_item_tags_tag_name ON item_tags(tag_name);
+CREATE INDEX IF NOT EXISTS idx_item_tags_item_slug ON item_tags(item_slug);
+CREATE INDEX IF NOT EXISTS idx_item_tags_tag_name ON item_tags(tag_name);
 
-COMMENT ON TABLE item_tags IS '物品和标签的多对多关联表';
-COMMENT ON COLUMN item_tags.item_slug IS '关联物品 slug（逻辑关联）';
-COMMENT ON COLUMN item_tags.tag_name IS '关联标签 name（逻辑关联）';
+Comment ON TABLE item_tags IS '物品和标签的多对多关联表';
+Comment ON COLUMN item_tags.item_slug IS '关联物品 slug（逻辑关联）';
+Comment ON COLUMN item_tags.tag_name IS '关联标签 name（逻辑关联）';

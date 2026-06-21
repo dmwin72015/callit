@@ -21,6 +21,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rdd/cnalias/server/internal/model"
@@ -722,15 +723,15 @@ func (h *AdminHandler) AdminListRegions(c *gin.Context) {
 		parentID = &id
 	}
 
-	regions, err := h.regionService.List(c.Request.Context(), regionType, parentID)
+	regions, total, err := h.regionService.List(c.Request.Context(), regionType, parentID, page, pageSize)
 	if err != nil {
 		InternalError(c, "failed to fetch regions")
 		return
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":     regions,
+		"data":      regions,
+		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
 	})
@@ -855,12 +856,15 @@ func (h *AdminHandler) AdminDeleteRegion(c *gin.Context) {
 
 	err = h.regionService.Delete(c.Request.Context(), id)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			NotFound(c, "region not found")
+			return
+		}
 		InternalError(c, "failed to delete region")
 		return
 	}
 
-	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "deleted"})
+	Success(c, gin.H{"message": "deleted"})
 }
 
 // ========== 标签管理 ==========

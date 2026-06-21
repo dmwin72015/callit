@@ -46,6 +46,8 @@ func SetupRouter(
 		v1.GET("/regions", regionHandler.List)
 		v1.GET("/regions/:id", regionHandler.GetByID)
 		v1.GET("/regions/tree", regionHandler.GetTree)
+		v1.GET("/regions/search", regionHandler.SearchByCode)
+		v1.GET("/regions/search/name", regionHandler.SearchByName)
 
 		v1.GET("/categories", categoryHandler.List)
 		v1.GET("/categories/:id", categoryHandler.GetByID)

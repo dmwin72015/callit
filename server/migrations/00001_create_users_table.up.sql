@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
-COMMENT ON TABLE users IS '用户表';
-COMMENT ON COLUMN users.slug IS '用户唯一标识符，用于与其他表关联';
-COMMENT ON COLUMN users.email IS '用户邮箱（联系/登录用，不再做唯一约束）';
+Comment ON TABLE users IS '用户表';
+Comment ON COLUMN users.slug IS '用户唯一标识符，用于与其他表关联';
+Comment ON COLUMN users.email IS '用户邮箱（联系/登录用，不再做唯一约束）';
