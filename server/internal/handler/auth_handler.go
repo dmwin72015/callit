@@ -90,10 +90,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-		"token_type":    "Bearer",
-		"expires_in":    900,
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
+		"tokenType":    "Bearer",
+		"expiresIn":    900,
 		"user":          user.ToResponse(),
 	})
 }
@@ -131,9 +131,9 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-		"token_type":    "Bearer",
-		"expires_in":    900,
+		"accessToken":  accessToken,
+		"refreshToken": refreshToken,
+		"tokenType":    "Bearer",
+		"expiresIn":    900,
 	})
 }

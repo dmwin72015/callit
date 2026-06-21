@@ -36,10 +36,10 @@ class AuthService {
 
   async refreshAccessToken(refreshToken: string): Promise<string> {
     const data = await fetchService.post<AuthResponse>('/auth/refresh', {
-      refresh_token: refreshToken,
+      refreshToken: refreshToken,
     });
     this.setTokens(data);
-    return data.access_token;
+    return data.accessToken;
   }
 
   setTokens(data: AuthResponse): void {
@@ -47,8 +47,8 @@ class AuthService {
     localStorage.removeItem(this.refreshKey);
     localStorage.removeItem(this.userKey);
 
-    localStorage.setItem(this.tokenKey, data.access_token);
-    localStorage.setItem(this.refreshKey, data.refresh_token);
+    localStorage.setItem(this.tokenKey, data.accessToken);
+    localStorage.setItem(this.refreshKey, data.refreshToken);
     if (data.user) {
       localStorage.setItem(this.userKey, JSON.stringify(data.user));
       console.log('AuthService: Stored user with role:', data.user.role);

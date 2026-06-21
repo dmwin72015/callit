@@ -157,12 +157,12 @@ func (h *AliasHandler) SearchByAlias(c *gin.Context) {
 		return
 	}
 
-	regionIDStr := c.Query("region_id")
+	regionIDStr := c.Query("regionId")
 	var regionID *int64
 	if regionIDStr != "" {
 		id, err := strconv.ParseInt(regionIDStr, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid region_id")
+			BadRequest(c, "invalid regionId")
 			return
 		}
 		regionID = &id

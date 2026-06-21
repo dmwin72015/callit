@@ -19,9 +19,9 @@ export interface ApiResponse<T> {
 
 /** 分页列表响应 */
 export interface PaginatedResponse<T> {
-  data: T[];
+  items: T[];
   page: number;
-  page_size: number;
+  pageSize: number;
   total: number;
 }
 
@@ -35,16 +35,16 @@ export interface UserResponse {
   username: string;
   email: string;
   role: 'ADMIN' | 'USER';
-  is_verified: boolean;
-  created_at: string;
+  isVerified: boolean;
+  createdAt: string;
 }
 
 /** 登录响应 - 包含令牌和用户信息 */
 export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
   user?: UserResponse;
 }
 
@@ -55,14 +55,14 @@ export interface AuthResponse {
 /** 别名实体 */
 export interface AliasResponse {
   id: number;
-  alias_name: string;
-  item_name: string;
-  region_name: string;
-  region_code: string;
-  submitted_by: string;
-  votes_count: number;
+  aliasName: string;
+  itemName: string;
+  regionName: string;
+  regionCode: string;
+  submittedBy: string;
+  votesCount: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  created_at: string;
+  createdAt: string;
 }
 
 /** 条目实体 */
@@ -70,10 +70,10 @@ export interface ItemResponse {
   id: number;
   name: string;
   description: string;
-  category_id: number;
-  category_name: string;
-  aliases_count: number;
-  created_at: string;
+  categoryId: number;
+  categoryName: string;
+  aliasesCount: number;
+  createdAt: string;
 }
 
 /** 分类实体（支持树形结构） */
@@ -81,24 +81,24 @@ export interface CategoryResponse {
   id: number;
   name: string;
   description: string;
-  parent_id: number | null;
+  parentId: number | null;
   children?: CategoryResponse[];
-  items_count: number;
-  sort_order: number;
+  itemsCount: number;
+  sortOrder: number;
 }
 
 /** 地区实体（支持树形结构） */
 export interface RegionResponse {
   id: number;
   name: string;
-  parent_id: number | null;
-  region_type: 'PROVINCE' | 'CITY' | 'DISTRICT' | 'STREET';
+  parentId: number | null;
+  regionType: 'MACRO_REGION' | 'PROVINCE' | 'CITY' | 'DISTRICT' | 'STREET';
   code: string;
-  sort_order: number;
+  sortOrder: number;
   latitude?: number;
   longitude?: number;
-  postal_code?: string;
-  area_code?: string;
+  postalCode?: string;
+  areaCode?: string;
   children?: RegionResponse[];
 }
 
@@ -107,7 +107,7 @@ export interface TagResponse {
   id: number;
   name: string;
   color: string;
-  aliases_count: number;
+  aliasesCount: number;
 }
 
 // ============================================================================
@@ -116,19 +116,19 @@ export interface TagResponse {
 
 /** 仪表板统计数据 */
 export interface StatsResponse {
-  total_users: number;
-  total_items: number;
-  total_aliases: number;
-  pending_reviews: number;
+  totalUsers: number;
+  totalItems: number;
+  totalAliases: number;
+  pendingReviews: number;
 }
 
 /** 审计日志 */
 export interface AuditLogResponse {
   id: number;
-  admin_user: string;
+  adminUser: string;
   action: string;
-  target_type: string;
-  target_id: number;
+  targetType: string;
+  targetId: number;
   note: string;
-  created_at: string;
+  createdAt: string;
 }

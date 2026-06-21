@@ -30,8 +30,8 @@ export default function ItemEditPage() {
   }
 
   const { data: categoriesData } = useQuery({
-    queryKey: ['categories', { page: 1, page_size: 100 }],
-    queryFn: () => getCategories({ page: 1, page_size: 100 }),
+    queryKey: ['categories', { page: 1, pageSize: 100 }],
+    queryFn: () => getCategories({ page: 1, pageSize: 100 }),
   });
 
   const { data: item } = useQuery({
@@ -67,7 +67,7 @@ export default function ItemEditPage() {
     }
   }, [item, form]);
 
-  const onFinish = (values: { name: string; description?: string; category_id: number }) => {
+  const onFinish = (values: { name: string; description?: string; categoryId: number }) => {
     if (isNew) {
       createMutation.mutate(values);
     } else if (id) {
@@ -76,7 +76,7 @@ export default function ItemEditPage() {
   };
 
   const categoryOptions =
-    categoriesData?.data.map((cat) => ({
+    categoriesData?.items.map((cat) => ({
       value: cat.id,
       label: cat.name,
     })) || [];
@@ -92,7 +92,7 @@ export default function ItemEditPage() {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={{ name: '', description: '', category_id: undefined }}
+          initialValues={{ name: '', description: '', categoryId: undefined }}
         >
           <Form.Item
             name="name"
@@ -107,7 +107,7 @@ export default function ItemEditPage() {
           </Form.Item>
 
           <Form.Item
-            name="category_id"
+            name="categoryId"
             label="分类"
             rules={[{ required: true, message: '请选择分类' }]}
           >

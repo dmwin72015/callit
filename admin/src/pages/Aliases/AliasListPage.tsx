@@ -51,11 +51,11 @@ export default function AliasListPage() {
   const [form] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-aliases', { page, page_size: pageSize, status: statusFilter }],
+    queryKey: ['admin-aliases', { page, pageSize, status: statusFilter }],
     queryFn: () =>
       getAdminAliases({
         page,
-        page_size: pageSize,
+        pageSize,
         status: statusFilter,
       }),
   });
@@ -107,8 +107,8 @@ export default function AliasListPage() {
     },
     {
       title: '别名',
-      dataIndex: 'alias_name',
-      key: 'alias_name',
+      dataIndex: 'aliasName',
+      key: 'aliasName',
     },
     {
       title: '物品',
@@ -122,14 +122,14 @@ export default function AliasListPage() {
     },
     {
       title: '地区编码',
-      dataIndex: 'region_code',
-      key: 'region_code',
+      dataIndex: 'regionCode',
+      key: 'regionCode',
       width: 120,
     },
     {
       title: '类型',
-      dataIndex: 'name_type',
-      key: 'name_type',
+      dataIndex: 'nameType',
+      key: 'nameType',
       width: 100,
       render: (type: string) => (
         <span>{type === 'COMMON' ? '通用名' : type === 'ALIAS' ? '别名' : type}</span>
@@ -148,21 +148,21 @@ export default function AliasListPage() {
     },
     {
       title: '投票数',
-      dataIndex: 'votes_count',
-      key: 'votes_count',
+      dataIndex: 'votesCount',
+      key: 'votesCount',
       width: 90,
     },
     {
       title: '提交者',
-      dataIndex: 'submitted_by',
-      key: 'submitted_by',
+      dataIndex: 'submittedBy',
+      key: 'submittedBy',
       width: 90,
       render: (v: number | null) => (v ?? '-'),
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -226,7 +226,7 @@ export default function AliasListPage() {
       <Card>
         <Table<AliasResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
           pagination={{
@@ -256,7 +256,7 @@ export default function AliasListPage() {
         <AliasForm
           form={form}
           onSubmit={(values) => {
-            const { review_note, ...data } = values as Record<string, unknown>;
+            const { reviewNote, ...data } = values as Record<string, unknown>;
             createMutation.mutate(data as any);
           }}
           submitting={createMutation.isPending}
@@ -280,7 +280,7 @@ export default function AliasListPage() {
           <AliasForm
             form={form}
             onSubmit={(values) => {
-              const { review_note, ...data } = values as Record<string, unknown>;
+              const { reviewNote, ...data } = values as Record<string, unknown>;
               updateMutation.mutate({ id: editingAlias.id, data: data as Parameters<typeof updateAdminAlias>[1] });
             }}
             submitting={updateMutation.isPending}
@@ -315,7 +315,7 @@ function AliasForm({
 
   const { data: itemsData } = useQuery({
     queryKey: ['admin-items-search', itemSearch],
-    queryFn: () => getItems({ page: 1, page_size: 20, search: itemSearch || undefined }),
+    queryFn: () => getItems({ page: 1, pageSize: 20, search: itemSearch || undefined }),
     enabled: !!itemSearch,
   });
 
@@ -327,13 +327,13 @@ function AliasForm({
 
   return (
     <Form form={form} layout="vertical" onFinish={onSubmit}>
-      <Form.Item name="alias_name" label="别名" rules={[{ required: true, message: '请输入别名' }]}>
+      <Form.Item name="aliasName" label="别名" rules={[{ required: true, message: '请输入别名' }]}>
         <Input placeholder="请输入别名" />
       </Form.Item>
 
       <Space style={{ width: '100%' }}>
         <Form.Item
-          name="item_id"
+          name="itemId"
           label="物品"
           rules={[{ required: true, message: '请选择物品' }]}
           style={{ flex: 1 }}
@@ -342,7 +342,7 @@ function AliasForm({
             showSearch
             filterOption={false}
             placeholder="搜索并选择物品"
-            options={itemsData?.data?.map((item: ItemResponse) => ({
+            options={itemsData?.items?.map((item: ItemResponse) => ({
               label: `[${item.id}] ${item.name}`,
               value: item.id,
             }))}
@@ -352,7 +352,7 @@ function AliasForm({
           />
         </Form.Item>
         <Form.Item
-          name="region_code"
+          name="regionCode"
           label="地区"
           rules={[{ required: true, message: '请选择地区' }]}
           style={{ flex: 1 }}
@@ -373,7 +373,7 @@ function AliasForm({
       </Space>
 
       <Space style={{ width: '100%' }}>
-        <Form.Item name="name_type" label="名称类型" rules={[{ required: true, message: '请选择类型' }]} style={{ flex: 1 }}>
+        <Form.Item name="nameType" label="名称类型" rules={[{ required: true, message: '请选择类型' }]} style={{ flex: 1 }}>
           <Select placeholder="请选择" options={NAME_TYPE_OPTIONS} />
         </Form.Item>
         {!isEdit && (
@@ -383,15 +383,15 @@ function AliasForm({
         )}
       </Space>
 
-      <Form.Item name="review_note" label="备注">
+      <Form.Item name="reviewNote" label="备注">
         <TextArea rows={2} placeholder="选填：添加备注信息" />
       </Form.Item>
 
-      <Form.Item style={{ display: 'none' }} name="submitted_by" initialValue={currentUserId}>
+      <Form.Item style={{ display: 'none' }} name="submittedBy" initialValue={currentUserId}>
         <Input />
       </Form.Item>
 
-      <Form.Item style={{ display: 'none' }} name="votes_count" initialValue={0}>
+      <Form.Item style={{ display: 'none' }} name="votesCount" initialValue={0}>
         <Input />
       </Form.Item>
 

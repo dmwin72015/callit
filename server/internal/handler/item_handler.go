@@ -52,15 +52,15 @@ func NewItemHandler(itemService service.ItemService) *ItemHandler {
 // @Router       /items [get]
 func (h *ItemHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	categoryIDStr := c.Query("category_id")
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	categoryIDStr := c.Query("categoryId")
 	search := c.Query("search")
 
 	var categoryID *int64
 	if categoryIDStr != "" {
 		id, err := strconv.ParseInt(categoryIDStr, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid category_id")
+			BadRequest(c, "invalid categoryId")
 			return
 		}
 		categoryID = &id
@@ -71,7 +71,7 @@ func (h *ItemHandler) List(c *gin.Context) {
 		PageSize:   pageSize,
 		CategoryID: categoryID,
 		Search:     search,
-		OrderBy:    c.DefaultQuery("order_by", "name"),
+		OrderBy:    c.DefaultQuery("orderBy", "name"),
 	}
 
 	items, err := h.itemService.List(c.Request.Context(), opts)
@@ -83,7 +83,7 @@ func (h *ItemHandler) List(c *gin.Context) {
 	Success(c, gin.H{
 		"items": items,
 		"page":  page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 

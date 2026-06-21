@@ -3,9 +3,9 @@ import type { PaginatedResponse, UserResponse } from '../types';
 
 export const getUsers = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   role?: string;
-  is_verified?: boolean;
+  isVerified?: boolean;
   search?: string;
 }): Promise<PaginatedResponse<UserResponse>> => {
   const data = await fetchService.get<PaginatedResponse<UserResponse>>('/admin/users', { params });

@@ -17,6 +17,7 @@ type RegionRepository interface {
 	FindByCode(ctx context.Context, code string) (*model.Region, error)
 	SearchByName(ctx context.Context, keyword string, limit int) ([]model.Region, error)
 	Paginate(ctx context.Context, regionType *model.RegionType, parentID *int64, page, pageSize int) ([]model.Region, int64, error)
+	FindTree(ctx context.Context, rootID *int64, rootType *model.RegionType, maxDepth int) ([]model.RegionTreeNode, error)
 }
 
 type regionGORMRepository struct {
@@ -107,4 +108,48 @@ func (r *regionGORMRepository) Paginate(ctx context.Context, regionType *model.R
 	}
 
 	return regions, total, nil
+}
+
+func (r *regionGORMRepository) FindTree(ctx context.Context, rootID *int64, rootType *model.RegionType, maxDepth int) ([]model.RegionTreeNode, error) {
+	var args []any
+	rootSQL := ""
+
+	switch {
+	case rootID != nil:
+		rootSQL = "WHERE r.id = ?"
+		args = append(args, *rootID)
+	case rootType != nil:
+		rootSQL = "WHERE r.region_type = ?"
+		args = append(args, *rootType)
+	default:
+		rootSQL = "WHERE r.parent_id IS NULL"
+	}
+
+	query := fmt.Sprintf(`
+		WITH RECURSIVE tree AS (
+			SELECT id, name, parent_id, region_type, code, sort_order,
+			       latitude, longitude, postal_code, area_code, 1 AS depth
+			FROM regions r
+			%s
+			UNION ALL
+			SELECT r.id, r.name, r.parent_id, r.region_type, r.code, r.sort_order,
+			       r.latitude, r.longitude, r.postal_code, r.area_code, t.depth + 1
+			FROM regions r
+			JOIN tree t ON r.parent_id = t.id
+			WHERE t.depth < ?
+		)
+		SELECT id, name, parent_id, region_type, code, sort_order,
+		       latitude, longitude, postal_code, area_code, depth
+		FROM tree
+		ORDER BY depth, id
+	`, rootSQL)
+
+	args = append(args, maxDepth)
+
+	var nodes []model.RegionTreeNode
+	if err := r.db.WithContext(ctx).Raw(query, args...).Scan(&nodes).Error; err != nil {
+		return nil, fmt.Errorf("find tree: %w", err)
+	}
+
+	return nodes, nil
 }

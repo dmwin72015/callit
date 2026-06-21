@@ -49,8 +49,8 @@ describe('AuthService', () => {
         username: 'admin',
         email: 'admin@test.com',
         role: 'ADMIN',
-        is_verified: true,
-        created_at: '2024-01-01T00:00:00Z',
+        isVerified: true,
+        createdAt: '2024-01-01T00:00:00Z',
       };
       localStorage.setItem('callit_user', JSON.stringify(user));
 
@@ -70,17 +70,17 @@ describe('AuthService', () => {
   describe('login', () => {
     it('应该调用登录接口并返回用户数据', async () => {
       const mockResponse = {
-        access_token: 'access-token',
-        refresh_token: 'refresh-token',
-        token_type: 'Bearer',
-        expires_in: 900,
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
         user: {
           id: 1,
           username: 'admin',
           email: 'admin@test.com',
           role: 'ADMIN',
-          is_verified: true,
-          created_at: '2024-01-01T00:00:00Z',
+          isVerified: true,
+          createdAt: '2024-01-01T00:00:00Z',
         },
       };
 
@@ -107,15 +107,15 @@ describe('AuthService', () => {
       localStorage.setItem('callit_refresh_token', 'refresh-token');
 
       const mockResponse = {
-        access_token: 'new-access-token',
-        refresh_token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
         user: {
           id: 1,
           username: 'admin',
           email: 'admin@test.com',
           role: 'ADMIN',
-          is_verified: true,
-          created_at: '2024-01-01T00:00:00Z',
+          isVerified: true,
+          createdAt: '2024-01-01T00:00:00Z',
         },
       };
 
@@ -124,7 +124,7 @@ describe('AuthService', () => {
       const result = await auth.refreshAccessToken('refresh-token');
 
       expect(fetchService.post).toHaveBeenCalledWith('/auth/refresh', {
-        refresh_token: 'refresh-token',
+        refreshToken: 'refresh-token',
       });
       expect(result).toBe('new-access-token');
       expect(localStorage.getItem('callit_access_token')).toBe('new-access-token');
@@ -134,17 +134,17 @@ describe('AuthService', () => {
   describe('setTokens', () => {
     it('应该保存 tokens 和用户信息到 localStorage', () => {
       const authData = {
-        access_token: 'access-token',
-        refresh_token: 'refresh-token',
-        token_type: 'Bearer',
-        expires_in: 900,
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
         user: {
           id: 1,
           username: 'admin',
           email: 'admin@test.com',
           role: 'ADMIN',
-          is_verified: true,
-          created_at: '2024-01-01T00:00:00Z',
+          isVerified: true,
+          createdAt: '2024-01-01T00:00:00Z',
         },
       };
 
@@ -159,10 +159,10 @@ describe('AuthService', () => {
 
     it('应该在没有用户信息时只保存 tokens', () => {
       const authData = {
-        access_token: 'access-token',
-        refresh_token: 'refresh-token',
-        token_type: 'Bearer',
-        expires_in: 900,
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
       };
 
       auth.setTokens(authData);
@@ -178,10 +178,10 @@ describe('AuthService', () => {
       localStorage.setItem('callit_user', JSON.stringify({ id: 1 }));
 
       const authData = {
-        access_token: 'new-token',
-        refresh_token: 'new-refresh',
-        token_type: 'Bearer',
-        expires_in: 900,
+        accessToken: 'new-token',
+        refreshToken: 'new-refresh',
+        tokenType: 'Bearer',
+        expiresIn: 900,
       };
 
       auth.setTokens(authData);

@@ -30,11 +30,11 @@ export default function CategoryListPage() {
   const [form] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['categories', { page, page_size: pageSize, search }],
+    queryKey: ['categories', { page, pageSize, search }],
     queryFn: () =>
       getCategories({
         page,
-        page_size: pageSize,
+        pageSize,
         search: search || undefined,
       }),
   });
@@ -92,8 +92,8 @@ export default function CategoryListPage() {
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -150,7 +150,7 @@ export default function CategoryListPage() {
       <Card>
         <Table<CategoryResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
           pagination={{

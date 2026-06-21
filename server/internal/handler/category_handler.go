@@ -30,10 +30,10 @@ func NewCategoryHandler(categoryService service.CategoryService) *CategoryHandle
 // @Router       /categories [get]
 func (h *CategoryHandler) List(c *gin.Context) {
 	var parentID *int64
-	if pid := c.Query("parent_id"); pid != "" {
+	if pid := c.Query("parentId"); pid != "" {
 		id, err := strconv.ParseInt(pid, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid parent_id")
+			BadRequest(c, "invalid parentId")
 			return
 		}
 		parentID = &id

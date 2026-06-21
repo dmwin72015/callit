@@ -30,11 +30,11 @@ export default function TagListPage() {
   const [form] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tags', { page, page_size: pageSize, search }],
+    queryKey: ['tags', { page, pageSize, search }],
     queryFn: () =>
       getTags({
         page,
-        page_size: pageSize,
+        pageSize,
         search: search || undefined,
       }),
   });
@@ -167,7 +167,7 @@ export default function TagListPage() {
       <Card>
         <Table<TagResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
           pagination={{

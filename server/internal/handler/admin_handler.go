@@ -73,8 +73,7 @@ func NewAdminHandler(
 // @Failure      403 {object} Response
 // @Router       /admin/review-queue [get]
 func (h *AdminHandler) GetReviewQueue(c *gin.Context) {
-	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "review queue"})
+	Success(c, gin.H{"message": "review queue"})
 }
 
 // ApproveAlias godoc
@@ -108,8 +107,7 @@ func (h *AdminHandler) ApproveAlias(c *gin.Context) {
 		return
 	}
 
-	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "approved"})
+	Success(c, gin.H{"message": "approved"})
 }
 
 // RejectAlias godoc
@@ -143,8 +141,7 @@ func (h *AdminHandler) RejectAlias(c *gin.Context) {
 		return
 	}
 
-	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "rejected"})
+	Success(c, gin.H{"message": "rejected"})
 }
 
 // GetStats godoc
@@ -160,11 +157,10 @@ func (h *AdminHandler) RejectAlias(c *gin.Context) {
 // @Router       /admin/stats [get]
 func (h *AdminHandler) GetStats(c *gin.Context) {
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"total_items":     0,
-		"total_aliases":   0,
-		"pending_reviews": 0,
-		"total_users":     0,
+		"totalItems":     0,
+		"totalAliases":   0,
+		"pendingReviews": 0,
+		"totalUsers":     0,
 	})
 }
 
@@ -186,7 +182,7 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 // @Router       /admin/aliases [get]
 func (h *AdminHandler) AdminListAliases(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 	statusStr := c.Query("status")
 
 	var status *model.AliasStatus
@@ -202,9 +198,9 @@ func (h *AdminHandler) AdminListAliases(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"data":        aliases,
+		"items":        aliases,
 		"page":        page,
-		"page_size":   pageSize,
+		"pageSize":   pageSize,
 		"total":       total,
 	})
 }
@@ -352,15 +348,15 @@ func (h *AdminHandler) AdminDeleteAlias(c *gin.Context) {
 // @Router       /admin/items [get]
 func (h *AdminHandler) AdminListItems(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
-	categoryIDStr := c.Query("category_id")
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	categoryIDStr := c.Query("categoryId")
 	search := c.Query("search")
 
 	var categoryID *int64
 	if categoryIDStr != "" {
 		id, err := strconv.ParseInt(categoryIDStr, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid category_id")
+			BadRequest(c, "invalid categoryId")
 			return
 		}
 		categoryID = &id
@@ -371,7 +367,7 @@ func (h *AdminHandler) AdminListItems(c *gin.Context) {
 		PageSize:   pageSize,
 		CategoryID: categoryID,
 		Search:     search,
-		OrderBy:    c.DefaultQuery("order_by", "name"),
+		OrderBy:    c.DefaultQuery("orderBy", "name"),
 	}
 
 	items, err := h.itemService.List(c.Request.Context(), opts)
@@ -381,10 +377,9 @@ func (h *AdminHandler) AdminListItems(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":    items,
+		"items":    items,
 		"page":     page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 
@@ -512,7 +507,7 @@ func (h *AdminHandler) AdminDeleteItem(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "deleted"})
+		"message": "deleted"})
 }
 
 // ========== 分类管理 ==========
@@ -532,14 +527,14 @@ func (h *AdminHandler) AdminDeleteItem(c *gin.Context) {
 // @Router       /admin/categories [get]
 func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
-	parentIDStr := c.Query("parent_id")
+	parentIDStr := c.Query("parentId")
 	var parentID *int64
 	if parentIDStr != "" {
 		id, err := strconv.ParseInt(parentIDStr, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid parent_id")
+			BadRequest(c, "invalid parentId")
 			return
 		}
 		parentID = &id
@@ -552,10 +547,9 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":     categories,
+		"items":     categories,
 		"page":      page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 
@@ -683,7 +677,7 @@ func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "deleted"})
+		"message": "deleted"})
 }
 
 // ========== 地区管理 ==========
@@ -703,21 +697,21 @@ func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
 // @Router       /admin/regions [get]
 func (h *AdminHandler) AdminListRegions(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
-	regionTypeStr := c.Query("region_type")
+	regionTypeStr := c.Query("regionType")
 	var regionType *model.RegionType
 	if regionTypeStr != "" {
 		rt := model.RegionType(regionTypeStr)
 		regionType = &rt
 	}
 
-	parentIDStr := c.Query("parent_id")
+	parentIDStr := c.Query("parentId")
 	var parentID *int64
 	if parentIDStr != "" {
 		id, err := strconv.ParseInt(parentIDStr, 10, 64)
 		if err != nil {
-			BadRequest(c, "invalid parent_id")
+			BadRequest(c, "invalid parentId")
 			return
 		}
 		parentID = &id
@@ -730,10 +724,10 @@ func (h *AdminHandler) AdminListRegions(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"data":      regions,
+		"items":      regions,
 		"total":     total,
 		"page":      page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 
@@ -884,7 +878,7 @@ func (h *AdminHandler) AdminDeleteRegion(c *gin.Context) {
 // @Router       /admin/tags [get]
 func (h *AdminHandler) AdminListTags(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
 	tags, err := h.tagService.List(c.Request.Context())
 	if err != nil {
@@ -893,10 +887,9 @@ func (h *AdminHandler) AdminListTags(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":     tags,
+		"items":     tags,
 		"page":      page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 
@@ -1024,7 +1017,7 @@ func (h *AdminHandler) AdminDeleteTag(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED","message": "deleted"})
+		"message": "deleted"})
 }
 
 // ========== 用户管理 ==========
@@ -1044,14 +1037,13 @@ func (h *AdminHandler) AdminDeleteTag(c *gin.Context) {
 // @Router       /admin/users [get]
 func (h *AdminHandler) AdminListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
 	// TODO: Implement user listing with filters
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":     []interface{}{},
+		"items":     []interface{}{},
 		"page":      page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }
 
@@ -1139,13 +1131,12 @@ func (h *AdminHandler) AdminDeleteUser(c *gin.Context) {
 // @Router       /admin/audit-logs [get]
 func (h *AdminHandler) AdminListAuditLogs(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
 	// TODO: Implement audit log service
 	Success(c, gin.H{
-		"DEBUG": "MODIFIED",
-		"data":     []interface{}{},
+		"items":     []interface{}{},
 		"page":      page,
-		"page_size": pageSize,
+		"pageSize": pageSize,
 	})
 }

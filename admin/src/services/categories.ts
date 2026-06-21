@@ -3,7 +3,7 @@ import type { PaginatedResponse, CategoryResponse } from '../types';
 
 export const getCategories = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   search?: string;
 }): Promise<PaginatedResponse<CategoryResponse>> => {
   const data = await fetchService.get<PaginatedResponse<CategoryResponse>>('/admin/categories', { params });

@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>()(
         const data = await auth.login(email, password);
         auth.setTokens(data);
         const newState = {
-          token: data.access_token,
+          token: data.accessToken,
           user: data.user || null,
         };
         console.log('AuthStore: Setting state after login:', newState);

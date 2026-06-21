@@ -7,11 +7,12 @@ type User struct {
 	ID            int64      `gorm:"primaryKey" json:"id"`
 	Username      string     `gorm:"uniqueIndex;not null;size:50" json:"username" validate:"required,min=3,max=50"`
 	Email         string     `gorm:"uniqueIndex;not null;size:100" json:"email" validate:"required,email"`
-	PasswordHash  string     `gorm:"column:password_hash;not null;size:255" json:"-" validate:"required,min=8"`
+	Slug          string     `gorm:"not null;size:50;uniqueIndex" json:"slug"`
+	PasswordHash  string     `gorm:"column:password_hash;not null;size:255" json:"-" validate:"required,min:8"`
 	Role          string     `gorm:"type:varchar(20);not null;default:'USER'" json:"role"`
-	IsVerified    bool       `gorm:"not null;default:false" json:"is_verified"`
-	CreatedAt     time.Time  `json:"created_at"`
-	LastLoginAt   *time.Time `json:"last_login_at"`
+	IsVerified    bool       `gorm:"not null;default:false" json:"isVerified"`
+	CreatedAt     time.Time  `json:"createdAt"`
+	LastLoginAt   *time.Time `json:"lastLoginAt"`
 	UpdatedAt     time.Time  `json:"-"`
 }
 
@@ -43,9 +44,10 @@ type UserResponse struct {
 	ID         int64     `json:"id"`
 	Username   string    `json:"username"`
 	Email      string    `json:"email"`
+	Slug       string    `json:"slug"`
 	Role       string    `json:"role"`
-	IsVerified bool      `json:"is_verified"`
-	CreatedAt  time.Time `json:"created_at"`
+	IsVerified bool      `json:"isVerified"`
+	CreatedAt  time.Time `json:"createdAt"`
 }
 
 // ToResponse 转换为响应格式
@@ -54,6 +56,7 @@ func (u *User) ToResponse() *UserResponse {
 		ID:         u.ID,
 		Username:   u.Username,
 		Email:      u.Email,
+		Slug:       u.Slug,
 		Role:       u.Role,
 		IsVerified: u.IsVerified,
 		CreatedAt:  u.CreatedAt,

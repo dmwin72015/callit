@@ -23,11 +23,11 @@ export default function ItemListPage() {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['items', { page, page_size: pageSize, search }],
+    queryKey: ['items', { page, pageSize, search }],
     queryFn: () =>
       getItems({
         page,
-        page_size: pageSize,
+        pageSize,
         search: search || undefined,
       }),
   });
@@ -52,14 +52,14 @@ export default function ItemListPage() {
     },
     {
       title: '分类ID',
-      dataIndex: 'category_id',
-      key: 'category_id',
+      dataIndex: 'categoryId',
+      key: 'categoryId',
       width: 100,
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -98,7 +98,7 @@ export default function ItemListPage() {
       <Card>
         <Table<ItemResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading}
           pagination={{

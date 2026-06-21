@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       // 4. 更新 Zustand store
       useAuthStore.setState({
-        token: data.access_token,
+        token: data.accessToken,
         user: data.user,
       });
 

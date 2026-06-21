@@ -69,3 +69,4 @@ memory/
 server/scripts/__pycache__/
 *.pyc
 
+doc/superpowers

@@ -74,7 +74,7 @@ class FetchService {
 
   // Token 刷新相关
   private isRefreshing = false;
-  private refreshSubscribers: ((token: string) => void)[] = [];
+  private refreshSubscribers: ((token: string | null) => void)[] = [];
 
   constructor() {
     this.baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -213,17 +213,17 @@ class FetchService {
 
   /**
    * 订阅 token 刷新事件
-   * @param callback 接收新 token 的回调
+   * @param callback 接收新 token 的回调（null 表示刷新失败）
    */
-  subscribeTokenRefresh(callback: (token: string) => void): void {
+  subscribeTokenRefresh(callback: (token: string | null) => void): void {
     this.refreshSubscribers.push(callback);
   }
 
   /**
    * 通知所有订阅者 token 已刷新
-   * @param token 新的 access token
+   * @param token 新的 access token，null 表示刷新失败
    */
-  onTokenRefreshed(token: string): void {
+  onTokenRefreshed(token: string | null): void {
     this.refreshSubscribers.forEach((callback) => callback(token));
     this.refreshSubscribers = [];
   }
@@ -242,7 +242,7 @@ class FetchService {
   /**
    * 刷新 access token
    */
-  private async refreshAccessToken(): Promise<string | null> {
+  private async refreshAccessToken(config: FetchConfig): Promise<string | null> {
     if (this.isRefreshing) {
       return null;
     }
@@ -262,26 +262,30 @@ class FetchService {
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
 
-      const data: ApiResponse<{ access_token: string; refresh_token?: string }> =
+      const data: ApiResponse<{ accessToken: string; refreshToken?: string }> =
         await response.json();
 
-      if (data.code === 0 && data.data.access_token) {
-        const newToken = data.data.access_token;
+      if (data.code === 0 && data.data.accessToken) {
+        const newToken = data.data.accessToken;
 
         // 更新 token
         this.setAccessToken(newToken);
 
         // 如果接口返回了新 refresh token，也更新
-        if (data.data.refresh_token) {
-          localStorage.setItem('callit_refresh_token', data.data.refresh_token);
+        if (data.data.refreshToken) {
+          localStorage.setItem('callit_refresh_token', data.data.refreshToken);
         }
 
         // 通知所有等待的请求
-        this.onTokenRefreshed(newToken);
+        this.onTokenRefreshed(newToken as string);
 
         return newToken;
       }
 
+      // 刷新失败，清除 token 并跳转登录
+      this.clearTokens();
+      this.onTokenRefreshed(null);
+      this.emitAuthError(config);
       return null;
     } catch (error) {
       console.error('Failed to refresh token:', error);
@@ -521,6 +525,10 @@ class FetchService {
               };
               return this.request<T>(endpoint, processedConfig);
             }
+            // 刷新失败，跳转登录
+            this.clearTokens();
+            this.emitAuthError(processedConfig);
+            throw new Error('401 Unauthorized');
           } catch (waitError) {
             this.clearTokens();
             this.emitAuthError(processedConfig);
@@ -530,7 +538,7 @@ class FetchService {
 
         // 尝试刷新 token
         try {
-          const newToken = await this.refreshAccessToken();
+          const newToken = await this.refreshAccessToken(processedConfig);
           if (newToken) {
             // 使用新 token 重试请求
             processedConfig.headers = {
@@ -539,6 +547,10 @@ class FetchService {
             };
             return this.request<T>(endpoint, processedConfig);
           }
+          // 刷新失败，跳转登录
+          this.clearTokens();
+          this.emitAuthError(processedConfig);
+          throw new Error('401 Unauthorized');
         } catch (refreshError) {
           this.clearTokens();
           this.emitAuthError(processedConfig);

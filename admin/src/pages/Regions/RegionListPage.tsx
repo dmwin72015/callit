@@ -14,6 +14,8 @@ import {
   Typography,
   App,
   TreeSelect,
+  Row,
+  Col,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -29,6 +31,7 @@ import type { RegionResponse } from '../../types';
 const { Title } = Typography;
 
 const REGION_TYPE_OPTIONS = [
+  { label: '大区', value: 'MACRO_REGION' },
   { label: '省/直辖市', value: 'PROVINCE' },
   { label: '市', value: 'CITY' },
   { label: '区/县', value: 'DISTRICT' },
@@ -39,7 +42,7 @@ const REGION_TYPE_OPTIONS = [
 function buildTreeSelectData(nodes: RegionResponse[]): { value: number; title: string; children?: any }[] {
   return nodes.map((node) => ({
     value: node.id,
-    title: `[${node.region_type}] ${node.name} (${node.code})`,
+    title: node.name,
     children: node.children && node.children.length > 0
       ? buildTreeSelectData(node.children)
       : undefined,
@@ -58,19 +61,19 @@ export default function RegionListPage() {
   const [form] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['regions', { page, page_size: pageSize, region_type: regionType, parent_id: parentID }],
+    queryKey: ['regions', { page, pageSize, regionType, parentId: parentID }],
     queryFn: () =>
       getRegions({
         page,
-        page_size: pageSize,
-        region_type: regionType,
-        parent_id: parentID ?? undefined,
+        pageSize,
+        regionType,
+        parentId: parentID ?? undefined,
       }),
   });
 
   const { data: treeData } = useQuery({
     queryKey: ['regionTree'],
-    queryFn: () => getRegionTree(),
+    queryFn: () => getRegionTree(undefined, 'PROVINCE', 0),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -79,8 +82,21 @@ export default function RegionListPage() {
     return buildTreeSelectData(treeData);
   }, [treeData]);
 
+  const watchedRegionType = Form.useWatch('regionType', form);
+
+  const { data: parentTreeData } = useQuery({
+    queryKey: ['regionTree', 'parent', watchedRegionType],
+    queryFn: () => getRegionTree(undefined, 'PROVINCE', 0),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const parentTreeSelectData = useMemo(() => {
+    if (!parentTreeData) return [];
+    return buildTreeSelectData(parentTreeData);
+  }, [parentTreeData]);
+
   const createMutation = useMutation({
-    mutationFn: (values: any) => createRegion({ ...values, parent_id: values.parent_id ?? undefined }),
+    mutationFn: (values: any) => createRegion({ ...values, parentId: values.parentId ?? undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['regions'] });
       queryClient.invalidateQueries({ queryKey: ['regionTree'] });
@@ -95,7 +111,7 @@ export default function RegionListPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
-      updateRegion(id, { ...data, parent_id: data.parent_id ?? undefined }),
+      updateRegion(id, { ...data, parentId: data.parentId ?? undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['regions'] });
       queryClient.invalidateQueries({ queryKey: ['regionTree'] });
@@ -138,11 +154,12 @@ export default function RegionListPage() {
     },
     {
       title: '类型',
-      dataIndex: 'region_type',
-      key: 'region_type',
+      dataIndex: 'regionType',
+      key: 'regionType',
       width: 100,
       render: (v) => {
         const map: Record<string, string> = {
+          MACRO_REGION: '大区',
           PROVINCE: '省',
           CITY: '市',
           DISTRICT: '区/县',
@@ -154,14 +171,14 @@ export default function RegionListPage() {
     },
     {
       title: '邮编',
-      dataIndex: 'postal_code',
-      key: 'postal_code',
+      dataIndex: 'postalCode',
+      key: 'postalCode',
       width: 100,
     },
     {
       title: '区号',
-      dataIndex: 'area_code',
-      key: 'area_code',
+      dataIndex: 'areaCode',
+      key: 'areaCode',
       width: 100,
     },
     {
@@ -180,14 +197,14 @@ export default function RegionListPage() {
     },
     {
       title: '排序',
-      dataIndex: 'sort_order',
-      key: 'sort_order',
+      dataIndex: 'sortOrder',
+      key: 'sortOrder',
       width: 80,
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -203,7 +220,7 @@ export default function RegionListPage() {
               setEditingRegion(record);
               form.setFieldsValue({
                 ...record,
-                parent_id: record.parent_id ?? undefined,
+                parentId: record.parentId ?? undefined,
               });
             }}
           >
@@ -262,7 +279,7 @@ export default function RegionListPage() {
       <Card>
         <Table<RegionResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
           pagination={{
@@ -294,59 +311,64 @@ export default function RegionListPage() {
           layout="vertical"
           onFinish={(values) => createMutation.mutate(values)}
         >
-          <Form.Item
-            name="name"
-            label="地区名称"
-            rules={[{ required: true, message: '请输入地区名称' }]}
-          >
-            <Input placeholder="请输入地区名称" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="地区名称"
+                rules={[{ required: true, message: '请输入地区名称' }]}
+              >
+                <Input placeholder="请输入地区名称" />
+              </Form.Item>
 
-          <Form.Item
-            name="code"
-            label="代码"
-            rules={[{ required: true, message: '请输入地区代码' }]}
-          >
-            <Input placeholder="如：110101、440300" />
-          </Form.Item>
+              <Form.Item
+                name="code"
+                label="代码"
+                rules={[{ required: true, message: '请输入地区代码' }]}
+              >
+                <Input placeholder="如：110101、440300" />
+              </Form.Item>
 
-          <Form.Item
-            name="region_type"
-            label="地区类型"
-            rules={[{ required: true, message: '请选择地区类型' }]}
-          >
-            <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
-          </Form.Item>
+              <Form.Item
+                name="regionType"
+                label="地区类型"
+                rules={[{ required: true, message: '请选择地区类型' }]}
+              >
+                <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
+              </Form.Item>
 
-          <Form.Item name="parent_id" label="上级地区">
-            <TreeSelect
-              placeholder="请选择上级地区（可选）"
-              treeData={treeSelectData}
-              allowClear
-              showSearch
-              treeLine
-            />
-          </Form.Item>
+              <Form.Item name="parentId" label="上级地区">
+                <TreeSelect
+                  placeholder="请选择上级地区（可选）"
+                  treeData={parentTreeSelectData}
+                  allowClear
+                  showSearch
+                  treeLine
+                />
+              </Form.Item>
 
-          <Form.Item name="sort_order" label="排序" initialValue={0}>
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+              <Form.Item name="sortOrder" label="排序" initialValue={0}>
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="postalCode" label="邮编">
+                <Input placeholder="如：100000" />
+              </Form.Item>
 
-          <Form.Item name="postal_code" label="邮编">
-            <Input placeholder="如：100000" />
-          </Form.Item>
+              <Form.Item name="areaCode" label="区号">
+                <Input placeholder="如：010" />
+              </Form.Item>
 
-          <Form.Item name="area_code" label="区号">
-            <Input placeholder="如：010" />
-          </Form.Item>
+              <Form.Item name="longitude" label="经度">
+                <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
+              </Form.Item>
 
-          <Form.Item name="longitude" label="经度">
-            <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item name="latitude" label="纬度">
-            <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
-          </Form.Item>
+              <Form.Item name="latitude" label="纬度">
+                <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item>
             <Space>
@@ -377,59 +399,64 @@ export default function RegionListPage() {
             }
           }}
         >
-          <Form.Item
-            name="name"
-            label="地区名称"
-            rules={[{ required: true, message: '请输入地区名称' }]}
-          >
-            <Input placeholder="请输入地区名称" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="地区名称"
+                rules={[{ required: true, message: '请输入地区名称' }]}
+              >
+                <Input placeholder="请输入地区名称" />
+              </Form.Item>
 
-          <Form.Item
-            name="code"
-            label="代码"
-            rules={[{ required: true, message: '请输入地区代码' }]}
-          >
-            <Input placeholder="如：110101、440300" />
-          </Form.Item>
+              <Form.Item
+                name="code"
+                label="代码"
+                rules={[{ required: true, message: '请输入地区代码' }]}
+              >
+                <Input placeholder="如：110101、440300" />
+              </Form.Item>
 
-          <Form.Item
-            name="region_type"
-            label="地区类型"
-            rules={[{ required: true, message: '请选择地区类型' }]}
-          >
-            <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
-          </Form.Item>
+              <Form.Item
+                name="regionType"
+                label="地区类型"
+                rules={[{ required: true, message: '请选择地区类型' }]}
+              >
+                <Select placeholder="请选择地区类型" options={REGION_TYPE_OPTIONS} />
+              </Form.Item>
 
-          <Form.Item name="parent_id" label="上级地区">
-            <TreeSelect
-              placeholder="请选择上级地区（可选）"
-              treeData={treeSelectData}
-              allowClear
-              showSearch
-              treeLine
-            />
-          </Form.Item>
+              <Form.Item name="parentId" label="上级地区">
+                <TreeSelect
+                  placeholder="请选择上级地区（可选）"
+                  treeData={parentTreeSelectData}
+                  allowClear
+                  showSearch
+                  treeLine
+                />
+              </Form.Item>
 
-          <Form.Item name="sort_order" label="排序">
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+              <Form.Item name="sortOrder" label="排序">
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="postalCode" label="邮编">
+                <Input placeholder="如：100000" />
+              </Form.Item>
 
-          <Form.Item name="postal_code" label="邮编">
-            <Input placeholder="如：100000" />
-          </Form.Item>
+              <Form.Item name="areaCode" label="区号">
+                <Input placeholder="如：010" />
+              </Form.Item>
 
-          <Form.Item name="area_code" label="区号">
-            <Input placeholder="如：010" />
-          </Form.Item>
+              <Form.Item name="longitude" label="经度">
+                <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
+              </Form.Item>
 
-          <Form.Item name="longitude" label="经度">
-            <InputNumber step={0.0001} placeholder="如：116.4074" style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item name="latitude" label="纬度">
-            <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
-          </Form.Item>
+              <Form.Item name="latitude" label="纬度">
+                <InputNumber step={0.0001} placeholder="如：39.9042" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item>
             <Space>

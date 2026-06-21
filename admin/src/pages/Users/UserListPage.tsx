@@ -33,13 +33,13 @@ export default function UserListPage() {
   const [form] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['users', { page, page_size: pageSize, role: roleFilter, is_verified: verifiedFilter, search }],
+    queryKey: ['users', { page, pageSize, role: roleFilter, isVerified: verifiedFilter, search }],
     queryFn: () =>
       getUsers({
         page,
-        page_size: pageSize,
+        pageSize,
         role: roleFilter,
-        is_verified: verifiedFilter,
+        isVerified: verifiedFilter,
         search: search || undefined,
       }),
   });
@@ -93,8 +93,8 @@ export default function UserListPage() {
     },
     {
       title: '已验证',
-      dataIndex: 'is_verified',
-      key: 'is_verified',
+      dataIndex: 'isVerified',
+      key: 'isVerified',
       width: 120,
       render: (verified: boolean, record) => (
         <Switch
@@ -102,7 +102,7 @@ export default function UserListPage() {
           onChange={(checked) =>
             updateMutation.mutate({
               id: record.id,
-              data: { is_verified: checked },
+              data: { isVerified: checked },
             })
           }
           disabled={record.role === 'ADMIN'}
@@ -111,8 +111,8 @@ export default function UserListPage() {
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -180,7 +180,7 @@ export default function UserListPage() {
       <Card>
         <Table<UserResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || updateMutation.isPending || deleteMutation.isPending}
           pagination={{

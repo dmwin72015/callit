@@ -28,6 +28,7 @@ func initDefaultAdmin(ctx context.Context, userRepo repository.UserRepository) e
 	admin := &model.User{
 		Username:     "admin",
 		Email:        "admin@test.com",
+		Slug:         "admin",
 		PasswordHash: string(hashedPassword),
 		Role:         "ADMIN",
 		IsVerified:   true,

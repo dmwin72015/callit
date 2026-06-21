@@ -3,9 +3,9 @@ import type { PaginatedResponse, ItemResponse } from '../types';
 
 export const getItems = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   search?: string;
-  category_id?: number;
+  categoryId?: number;
 }): Promise<PaginatedResponse<ItemResponse>> => {
   return fetchService.get<PaginatedResponse<ItemResponse>>('/admin/items', { params });
 };
@@ -17,7 +17,7 @@ export const getItem = async (id: number): Promise<ItemResponse> => {
 export const createItem = async (data: {
   name: string;
   description?: string;
-  category_id: number;
+  categoryId: number;
 }): Promise<ItemResponse> => {
   return fetchService.post<ItemResponse>('/admin/items', data);
 };

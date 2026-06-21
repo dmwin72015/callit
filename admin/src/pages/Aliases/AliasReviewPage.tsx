@@ -32,11 +32,11 @@ export default function AliasReviewPage() {
   const [rejectForm] = Form.useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['aliases', 'review-queue', { page, page_size: pageSize, status: activeTab }],
+    queryKey: ['aliases', 'review-queue', { page, pageSize, status: activeTab }],
     queryFn: () =>
       getReviewQueue({
         page,
-        page_size: pageSize,
+        pageSize,
         status: activeTab,
       }),
   });
@@ -74,8 +74,8 @@ export default function AliasReviewPage() {
     },
     {
       title: '别名',
-      dataIndex: 'alias_name',
-      key: 'alias_name',
+      dataIndex: 'aliasName',
+      key: 'aliasName',
     },
     {
       title: '物品',
@@ -89,13 +89,13 @@ export default function AliasReviewPage() {
     },
     {
       title: '提交者',
-      dataIndex: 'submitted_by',
-      key: 'submitted_by',
+      dataIndex: 'submittedBy',
+      key: 'submittedBy',
     },
     {
       title: '投票数',
-      dataIndex: 'votes_count',
-      key: 'votes_count',
+      dataIndex: 'votesCount',
+      key: 'votesCount',
       width: 100,
     },
     {
@@ -111,8 +111,8 @@ export default function AliasReviewPage() {
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
     {
@@ -171,7 +171,7 @@ export default function AliasReviewPage() {
 
         <Table<AliasResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading || approveMutation.isPending || rejectMutation.isPending}
           pagination={{
@@ -200,11 +200,11 @@ export default function AliasReviewPage() {
       >
         <Form form={approveForm} layout="vertical" onFinish={(values) => approveMutation.mutate({ id: approvingAlias!.id, data: values })}>
           <div style={{ marginBottom: 16 }}>
-            <strong>别名：</strong>{approvingAlias?.alias_name}
+            <strong>别名：</strong>{approvingAlias?.aliasName}
             <br />
-            <strong>物品：</strong>{approvingAlias?.item_name}
+            <strong>物品：</strong>{approvingAlias?.itemName}
             <br />
-            <strong>地区：</strong>{approvingAlias?.region_name}
+            <strong>地区：</strong>{approvingAlias?.regionName}
           </div>
           <Form.Item name="note" label="备注">
             <Input.TextArea rows={3} placeholder="可选：添加审核备注" />
@@ -231,11 +231,11 @@ export default function AliasReviewPage() {
       >
         <Form form={rejectForm} layout="vertical" onFinish={(values) => rejectMutation.mutate({ id: rejectingAlias!.id, data: values })}>
           <div style={{ marginBottom: 16 }}>
-            <strong>别名：</strong>{rejectingAlias?.alias_name}
+            <strong>别名：</strong>{rejectingAlias?.aliasName}
             <br />
-            <strong>物品：</strong>{rejectingAlias?.item_name}
+            <strong>物品：</strong>{rejectingAlias?.itemName}
             <br />
-            <strong>地区：</strong>{rejectingAlias?.region_name}
+            <strong>地区：</strong>{rejectingAlias?.regionName}
           </div>
           <Form.Item name="reason" label="拒绝原因" rules={[{ required: true, message: '请输入拒绝原因' }]}>
             <Input.TextArea rows={3} placeholder="请输入拒绝原因" />

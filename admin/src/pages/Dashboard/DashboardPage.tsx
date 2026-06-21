@@ -41,7 +41,7 @@ export default function DashboardPage() {
           <Card>
             <Statistic
               title="总用户数"
-              value={stats?.total_users || 0}
+              value={stats?.totalUsers || 0}
               prefix={<UserOutlined />}
             />
           </Card>
@@ -50,7 +50,7 @@ export default function DashboardPage() {
           <Card>
             <Statistic
               title="总物品数"
-              value={stats?.total_items || 0}
+              value={stats?.totalItems || 0}
               prefix={<FileTextOutlined />}
             />
           </Card>
@@ -59,7 +59,7 @@ export default function DashboardPage() {
           <Card>
             <Statistic
               title="总别名数"
-              value={stats?.total_aliases || 0}
+              value={stats?.totalAliases || 0}
               prefix={<AuditOutlined />}
             />
           </Card>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
           <Card>
             <Statistic
               title="待审核"
-              value={stats?.pending_reviews || 0}
+              value={stats?.pendingReviews || 0}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: '#cf1322' }}
             />

@@ -23,9 +23,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -43,16 +41,13 @@ import (
 )
 
 func main() {
-	// 加载 .env 文件（如果存在）
 	_ = godotenv.Load("../.env")
 
-	// 加载配置
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// 初始化日志
 	if err := pkg.InitLogger(cfg.App.Environment, cfg.App.LogLevel); err != nil {
 		log.Fatalf("Failed to init logger: %v", err)
 	}
@@ -63,36 +58,18 @@ func main() {
 		zap.String("version", "1.0.0"),
 	)
 
-	// 连接数据库
 	db, err := pkg.NewDB(&cfg.Database, cfg.App.Environment)
 	if err != nil {
 		pkg.Logger.Fatal("Failed to connect database", zap.Error(err))
 	}
 
-	// 执行数据库迁移 (golang-migrate)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		url.QueryEscape(cfg.Database.User),
-		url.QueryEscape(cfg.Database.Password),
-		cfg.Database.Host, cfg.Database.Port,
-		cfg.Database.DBName, cfg.Database.SSLMode)
-	cmd := exec.Command("./migrate", "-path", "./migrations", "-database", dsn, "up")
-	cmd.Dir = "."
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		pkg.Logger.Fatal("Failed to run migrations", zap.Error(err))
-	}
-
-	// 初始化Redis
 	if err := cache.InitRedis(&cfg.Redis); err != nil {
 		pkg.Logger.Fatal("Failed to connect redis", zap.Error(err))
 	}
 	defer cache.Close()
 
-	// 初始化JWT
 	pkg.InitJWT(&cfg.JWT)
 
-	// 初始化Repository
 	userRepo := repository.NewUserRepository(db)
 	itemRepo := repository.NewItemRepository(db)
 	aliasRepo := repository.NewAliasRepository(db)
@@ -100,14 +77,12 @@ func main() {
 	categoryRepo := repository.NewCategoryRepository(db)
 	tagRepo := repository.NewTagRepository(db)
 
-	// 初始化默认管理员账号（仅开发环境）
 	if cfg.App.Environment == "development" {
 		if err := initDefaultAdmin(context.Background(), userRepo); err != nil {
 			pkg.Logger.Warn("Failed to initialize default admin", zap.Error(err))
 		}
 	}
 
-	// 初始化Service
 	userService := service.NewUserService(userRepo)
 	itemService := service.NewItemService(itemRepo)
 	aliasService := service.NewAliasService(aliasRepo, itemRepo)
@@ -115,7 +90,6 @@ func main() {
 	categoryService := service.NewCategoryService(categoryRepo)
 	tagService := service.NewTagService(tagRepo)
 
-	// 初始化Handler
 	authHandler := handler.NewAuthHandler(userService)
 	itemHandler := handler.NewItemHandler(itemService)
 	aliasHandler := handler.NewAliasHandler(aliasService)
@@ -124,7 +98,6 @@ func main() {
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	tagHandler := handler.NewTagHandler(tagService)
 
-	// 配置路由
 	router := router.SetupRouter(
 		authHandler,
 		itemHandler,
@@ -135,7 +108,6 @@ func main() {
 		tagHandler,
 	)
 
-	// 启动服务
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
 	pkg.Logger.Info("Server starting", zap.String("addr", addr))
 
@@ -143,7 +115,6 @@ func main() {
 		pkg.Logger.Fatal("Failed to start server", zap.Error(err))
 	}
 
-	// 优雅关闭
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

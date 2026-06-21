@@ -33,7 +33,7 @@ func NewRegionHandler(regionService service.RegionService) *RegionHandler {
 // @Router       /regions [get]
 func (h *RegionHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 	if page < 1 {
 		page = 1
 	}
@@ -42,13 +42,13 @@ func (h *RegionHandler) List(c *gin.Context) {
 	}
 
 	var regionType *model.RegionType
-	if rt := c.Query("region_type"); rt != "" {
+	if rt := c.Query("regionType"); rt != "" {
 		rt := model.RegionType(rt)
 		regionType = &rt
 	}
 
 	var parentID *int64
-	if pid := c.Query("parent_id"); pid != "" {
+	if pid := c.Query("parentId"); pid != "" {
 		id, err := strconv.ParseInt(pid, 10, 64)
 		if err != nil {
 			BadRequest(c, "invalid parent_id")
@@ -64,7 +64,7 @@ func (h *RegionHandler) List(c *gin.Context) {
 	}
 
 	Success(c, gin.H{
-		"data":      regions,
+		"items":      regions,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
@@ -104,13 +104,15 @@ func (h *RegionHandler) GetByID(c *gin.Context) {
 // @Tags         regions
 // @Accept       json
 // @Produce      json
-// @Param        root_id query int64 false "Root region ID (optional, default: top-level regions)"
+// @Param        root_id   query int64  false "Root region ID (optional)"
+// @Param        root_type query string false "Root region type (optional: PROVINCE, CITY, DISTRICT, etc.)"
+// @Param        max_depth query int    false "Max tree depth (default 2, max 5)"
 // @Success      200 {object} Response{data=[]model.RegionResponse}
 // @Failure      500 {object} Response
 // @Router       /regions/tree [get]
 func (h *RegionHandler) GetTree(c *gin.Context) {
 	var rootID *int64
-	if rid := c.Query("root_id"); rid != "" {
+	if rid := c.Query("rootId"); rid != "" {
 		id, err := strconv.ParseInt(rid, 10, 64)
 		if err != nil {
 			BadRequest(c, "invalid root_id")
@@ -119,7 +121,21 @@ func (h *RegionHandler) GetTree(c *gin.Context) {
 		rootID = &id
 	}
 
-	tree, err := h.regionService.GetTree(c.Request.Context(), rootID)
+	var rootType *model.RegionType
+	if rt := c.Query("rootType"); rt != "" {
+		rt := model.RegionType(rt)
+		rootType = &rt
+	}
+
+	maxDepth := 2
+	if md := c.Query("maxDepth"); md != "" {
+		val, err := strconv.Atoi(md)
+		if err == nil && val > 0 && val <= 5 {
+			maxDepth = val
+		}
+	}
+
+	tree, err := h.regionService.GetTree(c.Request.Context(), rootID, rootType, maxDepth)
 	if err != nil {
 		InternalError(c, "failed to get region tree")
 		return

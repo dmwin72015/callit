@@ -10,9 +10,9 @@ import (
 type Category struct {
 	ID        int64     `gorm:"primaryKey" json:"id"`
 	Name      string    `gorm:"not null;size:50" json:"name" validate:"required,min=1,max=50"`
-	ParentID  *int64   `json:"parent_id"`
+	ParentID  *int64   `json:"parentId"`
 	Icon      string    `gorm:"size:50" json:"icon"`
-	SortOrder int       `gorm:"not null;default:0" json:"sort_order"`
+	SortOrder int       `gorm:"not null;default:0" json:"sortOrder"`
 	Children  []Category `gorm:"-" json:"children,omitempty"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
@@ -38,34 +38,34 @@ func (c *Category) ToResponse() *CategoryResponse {
 // CategoryRequest 分类请求（保留向后兼容）
 type CategoryRequest struct {
 	Name      string `json:"name" validate:"required,min=1,max=50"`
-	ParentID  *int64 `json:"parent_id"`
+	ParentID  *int64 `json:"parentId"`
 	Icon      string `json:"icon"`
-	SortOrder int    `json:"sort_order"`
+	SortOrder int    `json:"sortOrder"`
 }
 
 // CategoryCreateRequest 创建分类请求
 type CategoryCreateRequest struct {
 	Name      string `json:"name" validate:"required,min=1,max=50"`
-	ParentID  *int64 `json:"parent_id"`
+	ParentID  *int64 `json:"parentId"`
 	Icon      string `json:"icon"`
-	SortOrder int    `json:"sort_order"`
+	SortOrder int    `json:"sortOrder"`
 }
 
 // CategoryUpdateRequest 更新分类请求
 type CategoryUpdateRequest struct {
 	Name      *string `json:"name" validate:"required,min=1,max=50"`
-	ParentID  *int64  `json:"parent_id"`
+	ParentID  *int64  `json:"parentId"`
 	Icon      *string `json:"icon"`
-	SortOrder *int    `json:"sort_order"`
+	SortOrder *int    `json:"sortOrder"`
 }
 
 // CategoryResponse 分类响应
 type CategoryResponse struct {
 	ID        int64            `json:"id"`
 	Name      string           `json:"name"`
-	ParentID  *int64           `json:"parent_id"`
+	ParentID  *int64           `json:"parentId"`
 	Icon      string           `json:"icon"`
-	SortOrder int              `json:"sort_order"`
+	SortOrder int              `json:"sortOrder"`
 	Children  []CategoryResponse `json:"children,omitempty"`
 }
 

@@ -3,7 +3,7 @@ import type { PaginatedResponse, AliasResponse } from '../types';
 
 export const getReviewQueue = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }): Promise<PaginatedResponse<AliasResponse>> => {
   const data = await fetchService.get<PaginatedResponse<AliasResponse>>('/admin/aliases/review-queue', { params });
@@ -22,7 +22,7 @@ export const rejectAlias = async (id: number, reasonData: { reason: string }) =>
 
 export const getAdminAliases = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   status?: string;
 }): Promise<PaginatedResponse<AliasResponse>> => {
   const data = await fetchService.get<PaginatedResponse<AliasResponse>>('/admin/aliases', { params });
@@ -35,25 +35,25 @@ export const getAdminAlias = async (id: number): Promise<AliasResponse> => {
 };
 
 export const createAdminAlias = async (data: {
-  item_id: number;
-  region_code: string;
-  alias_name: string;
-  name_type: string;
+  itemId: number;
+  regionCode: string;
+  aliasName: string;
+  nameType: string;
   status: string;
-  votes_count?: number;
-  submitted_by?: number | null;
+  votesCount?: number;
+  submittedBy?: number | null;
 }): Promise<AliasResponse> => {
   const res = await fetchService.post<AliasResponse>('/admin/aliases', data);
   return res;
 };
 
 export const updateAdminAlias = async (id: number, data: {
-  item_id: number;
-  region_code: string;
-  alias_name: string;
-  name_type: string;
+  itemId: number;
+  regionCode: string;
+  aliasName: string;
+  nameType: string;
   status: string;
-  votes_count: number;
+  votesCount: number;
 }): Promise<AliasResponse> => {
   const res = await fetchService.put<AliasResponse>(`/admin/aliases/${id}`, data);
   return res;

@@ -3,14 +3,14 @@ import type { PaginatedResponse, TagResponse } from '../types';
 
 export const getTags = async (params: {
   page?: number;
-  page_size?: number;
+  pageSize?: number;
   search?: string;
 }): Promise<PaginatedResponse<TagResponse>> => {
   const data = await fetchService.get<PaginatedResponse<TagResponse>>('/admin/tags', { params });
   return data;
 };
 
-export const createTag = async (tagData: { name: string; description?: string; category_ids?: number[] }): Promise<TagResponse> => {
+export const createTag = async (tagData: { name: string; description?: string; categoryIds?: number[] }): Promise<TagResponse> => {
   const data = await fetchService.post<TagResponse>('/admin/tags', tagData);
   return data;
 };

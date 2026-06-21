@@ -8,7 +8,7 @@ export const getStats = async (): Promise<StatsResponse> => {
 
 export const getRecentActivity = async (limit: number = 10) => {
   const data = await fetchService.get('/admin/audit-logs', {
-    params: { limit, page: 1, page_size: limit },
+    params: { limit, page: 1, pageSize: limit },
   });
   return data;
 };

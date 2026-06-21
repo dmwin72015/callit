@@ -26,10 +26,10 @@ const (
 type Item struct {
 	ID          int64      `gorm:"primaryKey" json:"id"`
 	Name        string     `gorm:"not null;size:100" json:"name" validate:"required,min=1,max=100"`
-	CategoryID  *int64    `json:"category_id"`
+	CategoryID  *int64    `json:"categoryId"`
 	Description string     `json:"description"`
-	CreatedBy   *int64    `json:"created_by"`
-	CreatedAt   time.Time  `json:"created_at"`
+	CreatedBy   *int64    `json:"createdBy"`
+	CreatedAt   time.Time  `json:"createdAt"`
 	UpdatedAt   time.Time  `json:"-"`
 }
 
@@ -49,21 +49,21 @@ type ItemListOptions struct {
 // ItemRequest 物品请求（保留向后兼容）
 type ItemRequest struct {
 	Name        string `json:"name" validate:"required,min=1,max=100"`
-	CategoryID  *int64 `json:"category_id"`
+	CategoryID  *int64 `json:"categoryId"`
 	Description string `json:"description"`
 }
 
 // ItemCreateRequest 创建物品请求
 type ItemCreateRequest struct {
 	Name        string `json:"name" validate:"required,min=1,max=100"`
-	CategoryID  *int64 `json:"category_id"`
+	CategoryID  *int64 `json:"categoryId"`
 	Description string `json:"description"`
 }
 
 // ItemUpdateRequest 更新物品请求
 type ItemUpdateRequest struct {
 	Name        *string `json:"name" validate:"required,min=1,max=100"`
-	CategoryID  *int64  `json:"category_id"`
+	CategoryID  *int64  `json:"categoryId"`
 	Description *string `json:"description"`
 }
 
@@ -71,10 +71,10 @@ type ItemUpdateRequest struct {
 type ItemResponse struct {
 	ID          int64           `json:"id"`
 	Name        string          `json:"name"`
-	CategoryID  *int64          `json:"category_id"`
+	CategoryID  *int64          `json:"categoryId"`
 	Description string          `json:"description"`
 	Aliases     []AliasResponse `json:"aliases,omitempty"`
-	CreatedAt   time.Time       `json:"created_at"`
+	CreatedAt   time.Time       `json:"createdAt"`
 }
 
 // ToResponse 转换为响应

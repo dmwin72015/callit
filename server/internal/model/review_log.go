@@ -16,11 +16,11 @@ const (
 // ReviewLog 审核日志模型
 type ReviewLog struct {
 	ID         int64        `gorm:"primaryKey" json:"id"`
-	AliasID    int64        `gorm:"not null" json:"alias_id"`
-	ReviewerID int64        `gorm:"not null" json:"reviewer_id"`
+	AliasID    int64        `gorm:"not null" json:"aliasId"`
+	ReviewerID int64        `gorm:"not null" json:"reviewerId"`
 	Action     ReviewAction `gorm:"column:action;not null;type:varchar(20)" json:"action"`
 	Note       string       `gorm:"type:text" json:"note"`
-	CreatedAt  time.Time    `json:"created_at"`
+	CreatedAt  time.Time    `json:"createdAt"`
 }
 
 func (ReviewLog) TableName() string {
@@ -32,8 +32,8 @@ type ReviewLogResponse struct {
 	ID         int64        `json:"id"`
 	Action     ReviewAction `json:"action"`
 	Note       string       `json:"note"`
-	ReviewerID int64        `json:"reviewer_id"`
-	CreatedAt  time.Time    `json:"created_at"`
+	ReviewerID int64        `json:"reviewerId"`
+	CreatedAt  time.Time    `json:"createdAt"`
 }
 
 // ReviewRequest 审核请求

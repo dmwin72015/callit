@@ -23,11 +23,11 @@ export default function AuditLogPage() {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['audit-logs', { page, page_size: pageSize, action: actionFilter, search }],
+    queryKey: ['audit-logs', { page, pageSize, action: actionFilter, search }],
     queryFn: () =>
       getAuditLogs({
         page,
-        page_size: pageSize,
+        pageSize,
         action: actionFilter,
       }),
   });
@@ -91,8 +91,8 @@ export default function AuditLogPage() {
     },
     {
       title: '操作时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: 180,
     },
   ];
@@ -142,7 +142,7 @@ export default function AuditLogPage() {
 
         <Table<AuditLogResponse>
           columns={columns}
-          dataSource={data?.data || []}
+          dataSource={data?.items || []}
           rowKey="id"
           loading={isLoading}
           pagination={{

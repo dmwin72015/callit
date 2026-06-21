@@ -12,7 +12,7 @@ import (
 type RegionService interface {
 	List(ctx context.Context, regionType *model.RegionType, parentID *int64, page, pageSize int) ([]model.RegionResponse, int64, error)
 	GetByID(ctx context.Context, id int64) (*model.RegionResponse, error)
-	GetTree(ctx context.Context, rootID *int64) ([]model.RegionResponse, error)
+	GetTree(ctx context.Context, rootID *int64, rootType *model.RegionType, maxDepth int) ([]model.RegionResponse, error)
 	SearchByCode(ctx context.Context, code string) (*model.RegionResponse, error)
 	SearchByName(ctx context.Context, keyword string, limit int) ([]model.RegionResponse, error)
 	Create(ctx context.Context, req *model.RegionCreateRequest) (*model.RegionResponse, error)
@@ -56,41 +56,59 @@ func (s *regionService) GetByID(ctx context.Context, id int64) (*model.RegionRes
 	return region.ToResponse(), nil
 }
 
-func (s *regionService) GetTree(ctx context.Context, rootID *int64) ([]model.RegionResponse, error) {
-	var rootRegions []model.Region
+func (s *regionService) GetTree(ctx context.Context, rootID *int64, rootType *model.RegionType, maxDepth int) ([]model.RegionResponse, error) {
+	return s.GetTreeWithDepth(ctx, rootID, rootType, maxDepth)
+}
 
-	if rootID != nil {
-		roots, findErr := s.regionRepo.FindChildren(ctx, *rootID)
-		if findErr != nil {
-			return nil, fmt.Errorf("find children: %w", findErr)
-		}
-		for _, r := range roots {
-			rootRegions = append(rootRegions, r)
-		}
-	} else {
-		allRegions, getAllErr := s.regionRepo.GetAll(ctx)
-		if getAllErr != nil {
-			return nil, fmt.Errorf("get all regions: %w", getAllErr)
-		}
-		for _, r := range allRegions {
-			if r.ParentID == nil {
-				rootRegions = append(rootRegions, r)
-			}
+func (s *regionService) GetTreeWithDepth(ctx context.Context, rootID *int64, rootType *model.RegionType, maxDepth int) ([]model.RegionResponse, error) {
+	nodes, err := s.regionRepo.FindTree(ctx, rootID, rootType, maxDepth)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(nodes) == 0 {
+		return []model.RegionResponse{}, nil
+	}
+
+	return s.assembleTree(nodes), nil
+}
+
+func (s *regionService) assembleTree(nodes []model.RegionTreeNode) []model.RegionResponse {
+	byParent := make(map[int64][]model.RegionTreeNode)
+	var roots []model.RegionTreeNode
+
+	for i := range nodes {
+		node := &nodes[i]
+		if node.Depth == 1 {
+			roots = append(roots, *node)
+		} else if node.ParentID != nil {
+			byParent[*node.ParentID] = append(byParent[*node.ParentID], *node)
 		}
 	}
 
-	return s.buildTree(ctx, rootRegions), nil
+	return s.buildResponses(roots, byParent)
 }
 
-func (s *regionService) buildTree(ctx context.Context, nodes []model.Region) []model.RegionResponse {
+func (s *regionService) buildResponses(nodes []model.RegionTreeNode, byParent map[int64][]model.RegionTreeNode) []model.RegionResponse {
 	result := make([]model.RegionResponse, 0, len(nodes))
 	for _, node := range nodes {
-		resp := node.ToResponse()
-		children, childErr := s.regionRepo.FindChildren(ctx, node.ID)
-		if childErr == nil && len(children) > 0 {
-			resp.Children = s.buildTree(ctx, children)
+		resp := model.RegionResponse{
+			ID:         node.ID,
+			Name:       node.Name,
+			ParentID:   node.ParentID,
+			RegionType: node.RegionType,
+			Code:       node.Code,
+			SortOrder:  node.SortOrder,
+			Latitude:   node.Latitude,
+			Longitude:  node.Longitude,
+			PostalCode: node.PostalCode,
+			AreaCode:   node.AreaCode,
 		}
-		result = append(result, *resp)
+		children := byParent[node.ID]
+		if len(children) > 0 {
+			resp.Children = s.buildResponses(children, byParent)
+		}
+		result = append(result, resp)
 	}
 	return result
 }
